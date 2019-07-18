@@ -31,7 +31,6 @@
 /* USER CODE END Includes */
 
 extern UART_HandleTypeDef huart1;
-extern char buffer_rx_temp;
 
 /* USER CODE BEGIN Private defines */
 

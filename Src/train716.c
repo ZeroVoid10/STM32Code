@@ -9,7 +9,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-void lightLED(void)
+void flashLightLED(void)
 {
   HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
   HAL_Delay(1000);

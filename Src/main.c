@@ -107,8 +107,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-    //HAL_UART_AbortReceive(&huart1);
-    HAL_UART_Receive_IT(&huart1, (uint8_t *)&buffer_rx_temp, 1);
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

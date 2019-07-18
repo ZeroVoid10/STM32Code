@@ -24,11 +24,11 @@
 #include <string.h>
 #include "train716.h"
 
-char buffer_rx_temp;
-char UART_RX_Buffer[256] = {0};
-int UART_RX_Count = 0;
-char UART_RX_Alert[] = "Alert";
-char pref[] = "\nReturn message:";
+extern char buffer_rx_temp;
+extern char UART_RX_Buffer[256];
+extern int UART_RX_Count = 0;
+extern char UART_RX_Alert[];
+extern char pref[];
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart1;
@@ -81,7 +81,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
     /* USART1 interrupt Init */
-    HAL_NVIC_SetPriority(USART1_IRQn, 1, 1);
+    HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(USART1_IRQn);
   /* USER CODE BEGIN USART1_MspInit 1 */
   memset(UART_RX_Buffer, 0, 32);

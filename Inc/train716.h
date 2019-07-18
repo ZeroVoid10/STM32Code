@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-void lightLED(void);
+void flashLightLED(void);
 void keyLightLED(void);
 void transmitHello(void);
 void keyTransmitHello(void);

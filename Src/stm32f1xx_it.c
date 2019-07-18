@@ -220,10 +220,11 @@ void EXTI15_10_IRQHandler(void)
   /* USER CODE BEGIN EXTI15_10_IRQn 0 */
   if (HAL_GPIO_ReadPin(EXTI_13_GPIO_Port, GPIO_PIN_13) == GPIO_PIN_RESET ||HAL_GPIO_ReadPin(EXTI_14_GPIO_Port, GPIO_PIN_14) == GPIO_PIN_RESET)
   {
+    //需�?EXTI15_10_IRQn优先级设置大于一，Delay的已�?时钟使用优先级0了。
     HAL_Delay(200);
   /* USER CODE END EXTI15_10_IRQn 0 */
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_14);
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_14);
   /* USER CODE BEGIN EXTI15_10_IRQn 1 */
   }
   /* USER CODE END EXTI15_10_IRQn 1 */
