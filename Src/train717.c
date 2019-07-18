@@ -4,6 +4,8 @@
 #include "stm32f1xx_it.h"
 
 #include "train717.h"
+#include "train716.h"
+#include <string.h>
 
 void toggleLED(void) 
 {
@@ -27,7 +29,7 @@ void GPIO_Interrupt_Test(uint16_t GPIO_Pin)
 
 extern char buffer_rx_temp;
 extern char UART_RX_Buffer[256];
-extern int UART_RX_Count = 0;
+extern int UART_RX_Count;
 extern char UART_RX_Alert[];
 extern char pref[];
 extern UART_HandleTypeDef huart1;

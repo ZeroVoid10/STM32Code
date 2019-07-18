@@ -5,11 +5,11 @@
 extern "C" {
 #endif
 
-char buffer_rx_temp;
-char UART_RX_Buffer[256] = {0};
-int UART_RX_Count = 0;
-char UART_RX_Alert[] = "Alert";
-char pref[] = "\nReturn message:";
+extern char buffer_rx_temp;
+extern char UART_RX_Buffer[256];
+extern int UART_RX_Count;
+extern char UART_RX_Alert[];
+extern char pref[];
 
 void interupterTest(void);
 void toggleLED(void);

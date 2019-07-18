@@ -20,6 +20,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
@@ -27,6 +28,8 @@
 /* USER CODE BEGIN Includes */
 #include <stdarg.h>
 #include <string.h>
+#include "train717.h"
+#include "shell.h"
 //#include "train716.h"
 /* USER CODE END Includes */
 
@@ -94,11 +97,12 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART1_UART_Init();
+  MX_TIM2_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
   //uint8_t data[] = "key checked!\n";
   //GPIO_PinState LED_Out = GPIO_PIN_SET;
-  HAL_UART_Receive_IT(&huart1, (uint8_t *)&buffer_rx_temp, 1);
-  __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
+  shellInit();
  
   /* USER CODE END 2 */
 

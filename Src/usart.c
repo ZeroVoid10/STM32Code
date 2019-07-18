@@ -23,10 +23,11 @@
 /* USER CODE BEGIN 0 */
 #include <string.h>
 #include "train716.h"
+#include "shell.h"
 
 extern char buffer_rx_temp;
 extern char UART_RX_Buffer[256];
-extern int UART_RX_Count = 0;
+extern int UART_RX_Count;
 extern char UART_RX_Alert[];
 extern char pref[];
 /* USER CODE END 0 */
@@ -81,7 +82,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
     /* USART1 interrupt Init */
-    HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
+    HAL_NVIC_SetPriority(USART1_IRQn, 2, 0);
     HAL_NVIC_EnableIRQ(USART1_IRQn);
   /* USER CODE BEGIN USART1_MspInit 1 */
   memset(UART_RX_Buffer, 0, 32);
@@ -120,22 +121,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   
   if (huart->Instance == USART1)
   {
-    if (UART_RX_Count == 32) {
-      memset(UART_RX_Buffer, 0, 32);
-      UART_RX_Count = 0;
-      uprintf(UART_RX_Alert);
-    } else {
-      UART_RX_Buffer[UART_RX_Count++] = buffer_rx_temp;
-      uprintf(&buffer_rx_temp);
-      if (UART_RX_Buffer[UART_RX_Count-1] == '\r') {
-        uprintf(pref);
-        uprintf(UART_RX_Buffer);
-        uprintf("\n");
-        HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-        memset(UART_RX_Buffer, 0, 32);
-        UART_RX_Count = 0;
-      }
-    }
+    startShell();
     HAL_UART_Receive_IT(&huart1, (uint8_t *)&buffer_rx_temp, 1);
   }
 }
