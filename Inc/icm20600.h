@@ -58,4 +58,7 @@ typedef struct{
 }ICM_Device_Setting;
 
 void ICM_Init();
+void ICM_Read_Raw(int16_t ac[],int16_t gy[]);
+void Gyroraw_to_Angle_Speed(int16_t *gy,float *angle_speed );
+void Accraw_to_Acceleration(int16_t *ac,float *acceleration);
 #endif

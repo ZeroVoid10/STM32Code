@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include "usart.h"
+
 #define ADD_CMD(cmd_name, cmd_usage, cmd_func) \
     { \
         cmd_name, \
@@ -16,10 +18,8 @@ extern "C" {
 
 // TODO: change RX_BUFFER_SIZE to MAX_CMD_LENGTH
 #define MAX_CMD_ARG_LENGTH 16
-#define RX_BUFFER_SIZE 128
-#define MAX_CMD_INFO_LENGTH 128
+#define MAX_CMD_INFO_LENGTH 50
 #define MAX_ARGC 8
-#define OPEN_ECHO
 
 extern char buffer_rx_temp;
 extern char UART_RX_Buffer[RX_BUFFER_SIZE];

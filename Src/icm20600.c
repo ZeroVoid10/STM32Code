@@ -1,5 +1,7 @@
 #include "icm20600.h"
 #include "i2c.h"
+#include "usart.h"
+#include "main.h"
 
 
 ICM_Device_Setting ICM_Setting;
@@ -85,7 +87,7 @@ void ICM_Init(){
   
 INIT:
   
-  Delay_Us(1000);
+  //Delay_Us(1000);
   
 
   i2c_write_byte(PWR_MGMT_1,0x01);
@@ -126,14 +128,14 @@ INIT:
     break;		
   }
   
-  
+  uprintf("start icm20600 init\r\n");
   uint8_t dev_ID;
   dev_ID=I2C_read_byte(WHO_AM_I);
   
   if(dev_ID!=0x11){
     I2C_Reset();
-    //uprintf("icm20600 init failed!\r\n");
+    uprintf("icm20600 init failed!\r\n");
     goto INIT;
   }
-  
+  uprintf("icm20600 init ok\r\n");
 }
