@@ -1,9 +1,9 @@
 Drivers
 EWARM
 .mxproject
-*.ioc
 /.vscode/
 *.svd
 *.ld
 *.s
 /build
+Makefile
