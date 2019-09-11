@@ -5,13 +5,17 @@
 extern "C" {
 #endif
 
-//extern int show_acc;
-//extern int show_angle_speed;
+#include "main.h"
+
+#define EST_ANGLE_FLAG 0x00000001U
+#define ACC_ANGLE_FLAG 0x00000002U
+#define GYRO_ANGLE_FLAG 0x00000004U
+
 extern int _5ms_flag;
-extern int show_acc_angle_flag;
-extern int show_gyro_angle_flag;
+extern uint32_t show_angle_flag;
 extern int count;
 extern int INT_GAP;
+extern int run_shell_flag;
 
 #ifdef __cplusplus
 }

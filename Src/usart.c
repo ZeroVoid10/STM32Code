@@ -25,6 +25,7 @@
 #include <string.h>
 #include "tim.h"
 #include "shell.h"
+#include "flag.h"
 
 /* USER CODE END 0 */
 
@@ -162,7 +163,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
           prompt();
       }
     } else {*/
-      startShell();
+      shell_check();
       HAL_UART_Receive_IT(&huart1, (uint8_t *)&buffer_rx_temp, 1);
     //}
   } 

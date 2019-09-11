@@ -25,14 +25,15 @@ void int_init(void) {
 }
 
 void show_angle(void) {
-    float angle[3];
-    float accx_angle = _get_angle(angle);
+    float angle[3], acc_angle[3];
+    float accx_angle = _get_angle(angle, acc_angle);
     send_wave(angle[X], angle[Y], angle[Z], accx_angle);
 }
 
-float k = 0.11;
-float last_angle[3];
-float _get_angle(float *angle) {
+float k = 27;
+//float k = 0.15;
+float last_angle[3], ac_ang[3];
+float _get_angle(float *angle, float *acc_angle) {
     float angle_speed[3], acc[3];
     int16_t gy[3], ac[3];
     ICM_Read_Raw(ac, gy);
@@ -41,7 +42,6 @@ float _get_angle(float *angle) {
     Gyroraw_to_Angle_Speed(gy, angle_speed);
     rect(angle_speed, angle_speed_bias);
 
-    float acc_angle[3];
     acc_angle[X] = atan2(acc[Y], acc[Z])*180/PI;
     acc_angle[Y] = atan2(acc[X], acc[Z])*180/PI;
     acc_angle[Z] = atan2(acc[X], acc[Y])*180/PI;
@@ -54,6 +54,28 @@ float _get_angle(float *angle) {
     last_angle[Y] = angle[Y];
     last_angle[Z] = angle[Z];
     return acc_angle[X];
+}
+
+void get_2angle_speed(float *angle, float *aspeed, float *acc_angle) {
+    float acc[3];
+    int16_t gy[3], ac[3];
+    ICM_Read_Raw(ac, gy);
+
+    Accraw_to_Acceleration(ac, acc);
+    Gyroraw_to_Angle_Speed(gy, aspeed);
+    rect(aspeed, angle_speed_bias);
+
+    acc_angle[X] = atan2(acc[Y], acc[Z])*180/PI;
+    acc_angle[Y] = atan2(acc[X], acc[Z])*180/PI;
+    acc_angle[Z] = atan2(acc[X], acc[Y])*180/PI;
+
+    angle[X] = last_angle[X] + (aspeed[X]+(acc_angle[X]-last_angle[X])*k)*INT_GAP/1000;
+    angle[Y] = last_angle[Y] + (aspeed[Y]+(acc_angle[Y]-last_angle[Y])*k)*INT_GAP/1000;
+    angle[Z] = last_angle[Z] + (aspeed[Z]+(acc_angle[Z]-last_angle[Z])*k)*INT_GAP/1000;
+
+    last_angle[X] = angle[X];
+    last_angle[Y] = angle[Y];
+    last_angle[Z] = angle[Z];
 }
 
 void show_angle_both(void) {

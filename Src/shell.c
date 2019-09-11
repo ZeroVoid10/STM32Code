@@ -1,6 +1,7 @@
 #include "shell.h"
 #include "cmd_func.h"
 #include "gyro_acc.h"
+#include "flag.h"
 
 #include "tim.h"
 #include <string.h>
@@ -8,18 +9,13 @@
 #include <ctype.h>
 
 //TODO: need to move to proper file or delete
-#define CMD_SIZE 16
-#define PRSCRALER 7200
-#define MAX_CMD_NUM 10
-#define ECHO
 
 /* Remeber to add , in pre line */
 static struct cmd_struct cmd_list[] = {
     ADD_CMD("help", "Help", cmd_help),
     ADD_CMD("pwm", "-f/d <Param>: set frequence or duty", cmd_pwm),
+    ADD_CMD("s", "stop wave", cmd_stop_wave),
     ADD_CMD("speed", "set mtr speed", cmd_set_speed),
-    ADD_CMD("acc", "show acc data in wave", cmd_show_acc),
-    ADD_CMD("aspeed", "show angle speed in wave", cmd_show_angle_speed),
     ADD_CMD("angle", "get angle", cmd_angle)
     //ADD_CMD("load", "load <Param>: move steering", cmd_load)
 };
@@ -61,30 +57,31 @@ void prompt(void) {
     uprintf(promptStr);
 }
 
-void startShell(void) {
+void shell_exe(void) {
     int argc;
     #ifdef ECHO
-    echoInput();
+    uprintf("\n");
     #endif
-    if (UART_RX_Buffer[UART_RX_Count-1] == '\r')
-    {
-        #ifdef ECHO
-        uprintf("\n");
-        #endif
-        UART_RX_Buffer[UART_RX_Count-1] = '\0';
-        //readCmd(UART_RX_Buffer);
-        cmd_parse(UART_RX_Buffer, &argc, cmd_argv);
-        if (argc != 0) {
-            cmd_exec(argc, cmd_argv);
-        } else {
-            memset(UART_RX_Buffer, 0, RX_BUFFER_SIZE);
-            UART_RX_Count = 0;
-        }
-        //memset(UART_RX_Buffer, 0, RX_BUFFER_SIZE);
-        //UART_RX_Count = 0;
-        #ifdef ECHO
-        prompt();
-        #endif
+    UART_RX_Buffer[UART_RX_Count-1] = '\0';
+    //readCmd(UART_RX_Buffer);
+    cmd_parse(UART_RX_Buffer, &argc, cmd_argv);
+    if (argc != 0) {
+        cmd_exec(argc, cmd_argv);
+    } else {
+        memset(UART_RX_Buffer, 0, RX_BUFFER_SIZE);
+        UART_RX_Count = 0;
+    }
+    //memset(UART_RX_Buffer, 0, RX_BUFFER_SIZE);
+    //UART_RX_Count = 0;
+    #ifdef ECHO
+    prompt();
+    #endif
+}
+
+void shell_check(void) {
+    echoInput();
+    if (UART_RX_Buffer[UART_RX_Count-1] == '\r') {
+        run_shell_flag = 1;
     }
 }
 
@@ -92,7 +89,9 @@ void shellBackspace() {
     if(UART_RX_Count != 0)
     {
         UART_RX_Count--;
+        #ifdef ECHO
         uprintf("\b \b");
+        #endif
     }
 
 }

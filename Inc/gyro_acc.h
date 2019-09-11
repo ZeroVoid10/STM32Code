@@ -18,6 +18,7 @@ struct zero_bias {
 };
 
 extern float last_angle[3];
+extern float ac_ang[3];
 
 void int_init(void);
 
@@ -25,9 +26,12 @@ void acc_show_angle(void);
 void gyro_show_angle_speed(void);
 void gyro_show_acc(void);
 void wave_stop(void);
+
 void get_acc_angle(float *angle);
 void get_gyro_angle(float *angle);
-float _get_angle(float *angle);
+float _get_angle(float *angle, float *acc_angle);
+void get_2angle_speed(float *angle, float *aspeed, float *acc_angle);
+
 void show_acc_angle(void);
 void show_gyro_angle(void);
 void show_gyro_angle_speed(void);

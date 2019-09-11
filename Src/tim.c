@@ -456,7 +456,7 @@ void Delay_Us(uint32_t nus){
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
   if (htim->Instance == TIM1) {
     if (++count == 5) {
-      show_gyro_angle_flag = 1;
+      _5ms_flag = 1;
       count = 0;
     }
     

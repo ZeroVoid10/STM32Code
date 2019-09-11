@@ -1,10 +1,9 @@
 #include "flag.h"
 
-int show_acc = 0;
-int show_angle_speed = 0;
-int show_acc_angle_flag = 0;
-int show_gyro_angle_flag = 0;
+uint32_t show_angle_flag = 0x00000000U;
 
 int count = 0;
 int _5ms_flag = 0;
 int INT_GAP = 5;
+
+int run_shell_flag = 0;

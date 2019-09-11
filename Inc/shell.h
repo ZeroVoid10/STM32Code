@@ -14,12 +14,12 @@ extern "C" {
         cmd_func \
     } \
 
-#define OPEN_ECHO 
 
 // TODO: change RX_BUFFER_SIZE to MAX_CMD_LENGTH
 #define MAX_CMD_ARG_LENGTH 16
 #define MAX_CMD_INFO_LENGTH 50
 #define MAX_ARGC 8
+// #define ECHO
 
 extern char buffer_rx_temp;
 extern char UART_RX_Buffer[RX_BUFFER_SIZE];
@@ -35,7 +35,8 @@ struct cmd_struct {
 };
 
 void echoInput(void);
-void startShell(void);
+void shell_exe(void);
+void shell_check(void);
 void prompt(void);
 
 void shell_init(void);

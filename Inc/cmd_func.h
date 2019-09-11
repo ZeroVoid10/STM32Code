@@ -7,8 +7,9 @@ extern "C" {
 
 void cmd_pwm(int argc, char *argv[]);
 void cmd_set_speed(int argc, char *argv[]);
-void cmd_init_icm(int argc, char *argv[]);
+void cmd_stop_wave(int argc, char *argv[]);
 void cmd_angle(int argc, char *argv[]);
+
 void cmd_show_acc(int argc, char *argv[]);
 void cmd_show_angle_speed(int argc, char *argv[]);
 

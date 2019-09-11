@@ -60,21 +60,21 @@ void cmd_pwm(int argc, char *argv[]) {
 }
 
 void cmd_stop_wave(int argc, char *argv[]) {
-    show_acc_angle_flag = 0;
-    show_gyro_angle_flag = 0;
+    show_angle_flag = 0x00000000U;
+    uprintf("stop\r\n");
 }
 
 void cmd_angle(int argc, char *argv[]) {
     if (argc == 1) {
-        uprintf("less args\r\n");
-        return;
+        get_acc_angle(last_angle);
+        show_angle_flag = EST_ANGLE_FLAG;
     }
     
     if (strcmp(argv[1], "a") == 0) {
-        show_acc_angle_flag = 1;
+        show_angle_flag = ACC_ANGLE_FLAG;
     } else if (strcmp(argv[1], "g") == 0) {
         get_acc_angle(last_angle);
-        show_gyro_angle_flag = 1;
+        show_angle_flag = GYRO_ANGLE_FLAG;
     }
     uprintf("ok\r\n");
 }

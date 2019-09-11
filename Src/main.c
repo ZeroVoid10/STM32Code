@@ -112,7 +112,8 @@ int main(void)
   pwm_init();
   pwm_conf_init();
   shell_init();
-  //HAL_TIM_Base_Start_IT(&htim1);
+  HAL_TIM_Base_Start_IT(&htim1);
+  _get_angle(last_angle, ac_ang);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -122,12 +123,26 @@ int main(void)
     //if (show_gyro_angle_flag && _5ms_flag) {
     //}
     //show_gyro_angle_speed();
-    if (show_gyro_angle_flag == 1){
-      //show_gyro_angle();
-      //show_gyro_angle_speed();
+    if (run_shell_flag == 1) {
+      shell_exe();
+      run_shell_flag = 0;
+    }
+
+    if (_5ms_flag == 1) {
+      if (show_angle_flag != 0) {
+        if (show_angle_flag == EST_ANGLE_FLAG) {
+          show_angle();
+        } else if (show_angle_flag == ACC_ANGLE_FLAG) {
+          show_acc_angle();
+        } else if (show_angle_flag == GYRO_ANGLE_FLAG) {
+          show_gyro_angle();
+        }
+      }
+      //control_angle();
+      control_angle_2();
+      //control_angle_3();
       //show_angle();
-      //show_angle();
-      show_gyro_angle_flag = 0;
+      _5ms_flag = 0;
     }
     /* USER CODE END WHILE */
 
