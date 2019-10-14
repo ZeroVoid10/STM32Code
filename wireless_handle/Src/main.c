@@ -66,7 +66,7 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 int main_flag = 0;
-uint16_t time_1ms_cnt;
+static uint16_t time_1ms_cnt = 0;
 uint8_t time_5ms_flag;
 /* USER CODE END 0 */
 
@@ -109,6 +109,9 @@ int main(void)
   main_flag = 1;
   simplelib_init(&huart1, &hcan1);
   nrf_init(NULL);
+  uint8_t temp_addr[5] = {0x10*2, 0x11*2, 0x12*2, 0x11*2, 0x10*2};
+  nrf_set_rx_addr(NRF_PIPE_1, temp_addr, NRF_AW_5);
+  uint8_t rx_len;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -119,8 +122,9 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
       //simplelib_run();
-      adc_exe();
+      //adc_exe();
       gpio_delayed_button();
+      nrf_read_rx_data(nrf_rx_data, &rx_len, NULL);
   }
   /* USER CODE END 3 */
 }
@@ -183,9 +187,12 @@ void SystemClock_Config(void)
 /* USER CODE BEGIN 4 */
 void HAL_IncTick() {
   time_1ms_cnt++;
-  if(time_1ms_cnt%5==0){
-    time_5ms_flag=1;
+  if(time_1ms_cnt%10==0){
+    //time_5ms_flag=1;
     adc_flag = 1;
+  }
+  if (time_1ms_cnt == 10000) {
+    time_1ms_cnt = 0;
   }
 }
 /* USER CODE END 4 */

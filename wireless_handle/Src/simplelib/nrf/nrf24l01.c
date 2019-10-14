@@ -64,8 +64,8 @@ static NRF_ConfigTypeDef nrf_config = {
     power : NRF_POWER_UP,
     rf_power : NRF_RF_POWER_0DBM,
     crc_type : NRF_CRC_2B,
-    retry_delay : NRF_RETR_DELAY_1000US,
-    retries : 2,
+    retry_delay : NRF_RETR_DELAY_500US,
+    retries : 10,
     channel : 0,
 	pipes : 0x1,
     address : {0x10*NRF_ADDR_COF, 0x11*NRF_ADDR_COF, 0x12*NRF_ADDR_COF, 0x11*NRF_ADDR_COF, 0x10*NRF_ADDR_COF},
@@ -105,7 +105,7 @@ void nrf_init(NRF_ConfigTypeDef *config) {
 	_nrf_set_frequency(2400 + nrf_config.channel);
 	_nrf_set_speed(nrf_config.speed);
 	_nrf_set_address_width(nrf_config.addr_len);
-	_nrf_enable_pipe_autoack(NRF_MASK_PIPE0);
+	_nrf_enable_pipe_autoack(nrf_config.pipes);
 	_nrf_enable_features(NRF_FEATURE_ACK_PAYLOAD | NRF_FEATURE_DPL);
 	//nrf_write_reg_byte(NRF_REG_RX_PW_P0, 10);
 
@@ -204,11 +204,11 @@ uint8_t nrf_send_data(uint8_t *data, int len) {
  * @return -2       Wrong data length. Something is likely wrong.
  */
 uint8_t nrf_read_rx_data(uint8_t *data, uint8_t *len, NRF_PIPE *pipe) {
+	_nrf_set_mode(NRF_PRX);
     int retval = -1;
 	int status = _nrf_get_status();
 	int pipe_n = NRF_STATUS_GET_RX_P_NO(status);
 
-	NRF_CE_ENABLE();
 	if (pipe_n != NRF_RX_FIFO_EMPTY) {
 		*len = _nrf_get_payload_width();
 		if (pipe) {
@@ -230,8 +230,9 @@ uint8_t nrf_read_rx_data(uint8_t *data, uint8_t *len, NRF_PIPE *pipe) {
 		}
     }
 
-	NRF_CE_DISABLE();
-    nrf_receive_callback(data, *len);
+	if(retval >= 0) {
+    	nrf_receive_callback(data, *len);
+	}
 	return retval;
 }
 
@@ -320,7 +321,11 @@ void _nrf_set_mode(NRF_MODE mode) {
             config &= ~(NRF_CONFIG_PRIM_RX);
         }
         nrf_write_reg_byte(NRF_REG_CONFIG, config);
+		NRF_CE_DISABLE();
+		nrf_spi_delay();
+		nrf_spi_delay();
     }
+	NRF_CE_ENABLE();
 }
 
 /* 0x01-x03 -----------------------------------------------------*/
@@ -593,15 +598,18 @@ static uint8_t nrf_write_reg(uint8_t reg, uint8_t *data, uint8_t len) {
     NRF_SPI_Write(data, len);
     nrf_spi_end();
 	#ifdef SL_DEBUG
-	nrf_read_reg_byte(reg);
+	uint8_t temp[32];
+	uprintf_("write reg 0x%02x ", reg);
+	for(int i = 0; i<len; i++) {
+		uprintf_("0x%02x ", *(data+i));
+	}
+	uprintf_("\r\n");
+	nrf_read_reg(reg, temp, len);
 	#endif // SL_DEBUG
 	return 0;
 }
 
 static uint8_t nrf_write_reg_byte(uint8_t reg, uint8_t data) {
-	#ifdef SL_DEBUG
-	uprintf_("write reg 0x%x 0x%x\r\n", reg, data);
-	#endif // SL_DEBUG
     return nrf_write_reg(reg, &data, 1);
 }
 
@@ -614,14 +622,19 @@ static void nrf_read_reg(uint8_t reg, uint8_t *data, uint8_t len) {
     NRF_SPI_Read(data, len);
     nrf_spi_end();
 
+	#ifdef SL_DEBUG
+	uprintf_("read  reg 0x%02x ", reg);
+	for (int i=0; i<len; i++) {
+		uprintf_("0x%02x ", *(data+i));
+	}
+	uprintf_("\r\n");
+	#endif // SL_DEBUG
+
 }
 
 static uint8_t nrf_read_reg_byte(uint8_t reg) {
     uint8_t data;
     nrf_read_reg(reg, &data, 1);
-	#ifdef SL_DEBUG
-	uprintf_("read reg 0x%x 0x%x\r\n", reg, data);
-	#endif // SL_DEBUG
     return data;
 }
 
@@ -660,15 +673,13 @@ static void nrf_spi_delay(void) {
     }
 }
 
-static void nrf_ce_eanble(void) {
-	
+__weak void nrf_receive_callback(uint8_t *data, int len) {
+	#ifdef SL_DEBUG
+	uint8_t temp_data[10] = {0};
+	temp_data[8] = 0x01;
+	nrf_send_data(temp_data, 10);
+	#endif // SL_DEBUG
 }
-
-static void nrf_ce_disable(void) {
-	HAL_GPIO_WritePin(NRF_CE_GPIO_Port, NRF_SPI_CE_PIN, 0);
-}
-
-
 
 __weak void nrf_send_callback(void) {
 	#ifdef SL_DEBUG
