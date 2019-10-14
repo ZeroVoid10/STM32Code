@@ -14,7 +14,7 @@ extern "C" {
 #endif
 
 #include "can.h"
-#include "simplelib_config.h"
+#include "simplelib_cfg.h"
 
 typedef union{
     char ch[8];
@@ -40,6 +40,7 @@ void can_callback_add(const uint32_t id, void (*callback)(can_msg *data));
 void can_exc_callback(void);
 void can_std_mask_filter_conf(CAN_HandleTypeDef *hcan, uint32_t *std_id, uint32_t len, uint32_t bank_num);
 void can_std_list_filter_conf(CAN_HandleTypeDef *hcan, uint32_t id, uint32_t bank_num);
+void can_send_test(void);
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan);
 void HAL_CAN_RxFifo0FullCallback(CAN_HandleTypeDef *hcan);

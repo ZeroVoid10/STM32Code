@@ -7,9 +7,9 @@ extern "C" {
 
 #include "usart.h"
 
-#include "simplelib_config.h"
+#include "simplelib_cfg.h"
 
-#ifdef SL_USART
+#ifdef SL_CMD_USART_DMA
 #include "cmd.h"
 #include "cmd_func.h"
 #endif

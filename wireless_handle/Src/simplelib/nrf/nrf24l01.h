@@ -24,10 +24,12 @@ extern "C" {
 /*******************************************************************************
  * Include
  *******************************************************************************/
+#include "simplelib_cfg.h"
+
+#ifdef SL_NRF
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-#include "simplelib_config.h"
 
 
 /*******************************************************************************
@@ -366,6 +368,8 @@ void _nrf_enable_features(uint8_t features);
 void _nrf_flush_tx(void);
 void _nrf_flush_rx(void);
 void _nrf_flush_all(void);
+
+#endif // SL_NRF
 
 
 #ifdef __cplusplus

@@ -1,7 +1,7 @@
 #include "cmd_func.h"
 #include "can_utils.h"
 #include "can_func.h"
-#include "simplelib_config.h"
+#include "simplelib_cfg.h"
 #include "flags.h"
 
 

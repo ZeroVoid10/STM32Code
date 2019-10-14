@@ -1,6 +1,6 @@
 #include "can_func.h"
 #include "cmd.h"
-#include "simplelib_config.h"
+#include "simplelib_cfg.h"
 
 void can_func_init() {
     #ifdef SL_DEBUG

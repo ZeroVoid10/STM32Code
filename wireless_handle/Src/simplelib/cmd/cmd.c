@@ -9,8 +9,10 @@
 // TODO: ZeroVoid	due:10/7	优化内存分配管理
 
 #include "cmd.h"
-#include "hash.h"
 
+#ifdef SL_CMD_USART_DMA
+
+#include "hash.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -166,7 +168,7 @@ void uprintf(char *fmt, ...) {
     if (HAL_UART_Transmit_DMA(&CMD_USART, (uint8_t *)print_buffer, size) != HAL_OK) {
         HAL_Delay(10);
     }
-    //while(CMD_USART.hdmatx->State != HAL_DMA_STATE_READY);
+    while(CMD_USART.hdmatx->State != HAL_DMA_STATE_READY);
     //HAL_UART_Transmit(&CMD_USART, (uint8_t*)uart_buffer, size, 1000);
 }
 
@@ -214,3 +216,5 @@ static void _cmd_help(const void *key, void **value, void *c1) {
     char *usage = ((struct cmd_info*)(*value))->cmd_usage;
     uprintf("%s: %s\r\n", key, usage);
 }
+
+#endif // SL_USART

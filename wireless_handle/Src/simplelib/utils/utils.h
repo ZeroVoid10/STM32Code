@@ -5,7 +5,13 @@
 extern "C" {
 #endif
 
+/**
+ * @brief	宏数据处理函数
+ * @note	切勿在传入带有副作用的参数.e.g. *p++
+ */
 #define Limit(value,max)     if(value>max)value=max;else if(value<-max)value=-max
+#define Min(A, B)            ((A) <= (B) ? (A):(B))
+#define Max(A, B)			 ((A) >= (B) ? (A):(B))
 
 typedef struct{
 	float KP;

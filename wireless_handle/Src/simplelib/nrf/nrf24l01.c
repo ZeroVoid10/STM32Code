@@ -9,6 +9,8 @@
  *******************************************************************************/
 
 #include "nrf24l01.h"
+
+#ifdef SL_NRF
 #include <string.h>
 #include "assert.h"
 
@@ -686,3 +688,5 @@ __weak void nrf_send_callback(void) {
 	uprintf_("send over\r\n");
 	#endif // SL_DEBUG
 }
+
+#endif // SL_NRF
