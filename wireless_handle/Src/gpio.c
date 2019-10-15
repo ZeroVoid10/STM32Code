@@ -113,7 +113,7 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = NRF_IRQ_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(NRF_IRQ_GPIO_Port, &GPIO_InitStruct);
 
@@ -249,9 +249,8 @@ void gpio_delayed_button() {
 //    }
 //}
 
-//�ⲿ�жϵ�callback��PIN_x��Ӧÿһ����������������
-//void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-//{
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
 //  if(GPIO_Pin == GPIO_PIN_1)
 //  {
 //      //can_send_msg(325, "0",1);
@@ -277,8 +276,11 @@ void gpio_delayed_button() {
 //      //can_send_msg(325, "2",1);
 //    //exit_state = 5;
 //  }
-//  __HAL_GPIO_EXTI_CLEAR_IT(GPIO_Pin);
-//}
+  if (GPIO_Pin == GPIO_PIN_8) {
+    nrf_irq_handle();
+  }
+ //__HAL_GPIO_EXTI_CLEAR_IT(GPIO_Pin);
+}
 /* USER CODE END 2 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

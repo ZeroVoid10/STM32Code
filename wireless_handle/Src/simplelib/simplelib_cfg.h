@@ -27,7 +27,7 @@ extern "C" {
 #define SL_CAN                          // CAN通信模块
 #define SL_CMD_USART                    // 串口通信模块
 #define SL_CMD_USART_DMA                // 串口通信模块，使用DMA传输
-// #define SL_NRF                          // NRF通信模块
+#define SL_NRF                          // NRF通信模块
 
 #define SL_DEBUG                        // Simplelib debug macro
 

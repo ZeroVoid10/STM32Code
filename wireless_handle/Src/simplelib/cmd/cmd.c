@@ -168,7 +168,7 @@ void uprintf(char *fmt, ...) {
     if (HAL_UART_Transmit_DMA(&CMD_USART, (uint8_t *)print_buffer, size) != HAL_OK) {
         HAL_Delay(10);
     }
-    while(CMD_USART.hdmatx->State != HAL_DMA_STATE_READY);
+    //while(CMD_USART.hdmatx->State != HAL_DMA_STATE_READY);
     //HAL_UART_Transmit(&CMD_USART, (uint8_t*)uart_buffer, size, 1000);
 }
 
