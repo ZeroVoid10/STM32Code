@@ -9,6 +9,7 @@
  * Todo:			软件spi底层函数
  *******************************************************************************/
 #include "imitate_spi.h"
+#ifdef SL_IMI_SPI
 
 #include "gpio.h"
 #include "tim.h"
@@ -99,3 +100,5 @@ void ispi3_write_read(uint8_t* writeBuffer, uint8_t* readBuffer, int len) {
   iSPI3_CS_Disable();
   Delay(10);
 }
+
+#endif // SL_IMI_SPI

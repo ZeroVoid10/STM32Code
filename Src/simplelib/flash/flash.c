@@ -1,4 +1,6 @@
 #include "flash.h"
+#ifdef SL_FLASH
+
 
 /**
   * @brief  读取一个字的数据，并将地址自增，减少错误的可能，方便连续读数据
@@ -108,3 +110,4 @@ float STMFLASH_ReadFloat(u32 faddr)
 {
     return *(float*)faddr;
 }
+#endif // SL_FLASH

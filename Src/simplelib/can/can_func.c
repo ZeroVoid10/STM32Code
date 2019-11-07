@@ -4,23 +4,16 @@
 #ifdef SL_DEBUG
 #include "cmd.h"
 #endif // SL_DEBUG
-#include "kick.h"
 #include "mtr_driver.h"
 
 void can_get_mag_mtr(can_msg *data);
 
 void can_func_init() {
-    can_callback_add(0, can_get_mag_mtr);
     #ifdef SL_DEBUG
     can_callback_add(1, can_suc_rx);
     can_callback_add(325, can_show_button);
     can_callback_add(324, can_show_rocker);
     #endif
-}
-
-void can_get_mag_mtr(can_msg *data) {
-    kick_ctrl.mag_mtr_can_state.speed = data->fl[MDP_SPEED];
-    kick_ctrl.mag_mtr_can_state.position = data->fl[MDP_POSITION];
 }
 
 #ifdef SL_DEBUG

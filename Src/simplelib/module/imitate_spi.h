@@ -3,6 +3,9 @@
 #ifdef __cplusplus
  extern "C" {
 #endif
+#include "simplelib_cfg.h"
+#ifdef SL_IMI_SPI
+
 #include <stdint.h>
 /*iSPI1*/
 #define iSPI1_CSN_Pin                       GPIO_PIN_15
@@ -34,6 +37,7 @@
 void ispi1_write_read(uint8_t* writeBuffer, uint8_t* readBuffer, int len);  
 void ispi3_write_read(uint8_t* writeBuffer, uint8_t* readBuffer, int len);
    
+#endif // SL_IMI_SPI
    
 #ifdef __cplusplus
 }

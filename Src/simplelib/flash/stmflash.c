@@ -1,4 +1,6 @@
 #include "stmflash.h"
+#ifdef SL_FLASH
+
 #include "math.h"
 #include "cmd.h"
 //////////////////////////////////////////////////////////////////////////////////	 
@@ -160,3 +162,5 @@ void Test_Write(u32 WriteAddr,u32 WriteData)
 {
 	STMFLASH_Write(WriteAddr,&WriteData,1);//写入一个字 
 }
+
+#endif // SL_FLASH

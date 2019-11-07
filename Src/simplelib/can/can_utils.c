@@ -14,13 +14,13 @@
 #ifdef SL_CAN
 
 #include "hash.h"
+#include "flags.h"
 #include "cmd.h"
 #include "can_func.h"
 #include <stdlib.h>
 
 CAN_HandleTypeDef HCAN;
 
-int can_exc_callback_flag = 0;
 CAN_TxHeaderTypeDef TxHeader;
 CAN_RxHeaderTypeDef RxHeader;
 uint32_t TxMailbox;

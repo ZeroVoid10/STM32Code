@@ -11,7 +11,6 @@
 
 #include "simplelib.h"
 #include "flags.h"
-#include "kick.h"
 
 asm(".global _printf_float");
 
@@ -22,11 +21,15 @@ asm(".global _printf_float");
  * @return	None
  */
 void simplelib_init(UART_HandleTypeDef *cmd_usart, CAN_HandleTypeDef *hcan) {
+    #ifdef SL_CMD
     usart_DMA_init(cmd_usart);
-    can_init(hcan);
     cmd_func_init();
-    can_func_init();
     uprintf("simplelib init done\r\n");
+    #endif // SL_CMD
+    #ifdef SL_CAN
+    can_init(hcan);
+    can_func_init();
+    #endif // SL_CAN
 }
 
 void simplelib_run(void) {
@@ -39,8 +42,6 @@ void simplelib_run(void) {
         can_exc_callback_flag = 0;
     }
     if (send_wave_flag) {
-        send_wave(kick_ctrl.mag_mtr_can_state.speed, kick_ctrl.mag_mtr_up_arg, 
-                  kick_ctrl.mag_mtr_can_state.position, kick_ctrl.mag_mtr_up_pos);
-        HAL_Delay(10);
+        //HAL_Delay(10);
     }
 }

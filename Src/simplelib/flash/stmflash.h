@@ -1,5 +1,8 @@
 #ifndef __STMFLASH_H
 #define __STMFLASH_H
+#include "simplelib_cfg.h"
+#ifdef SL_FLASH
+
 #include "stm32f4xx_hal.h"
 #include "main.h"
 #include "stm32f4xx_hal_flash.h"
@@ -48,4 +51,5 @@ void write_prams();
 void load_prams();
 //测试写入
 void Test_Write(u32 WriteAddr,u32 WriteData);	
+#endif // SL_FLASH
 #endif

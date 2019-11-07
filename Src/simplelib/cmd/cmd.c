@@ -14,6 +14,7 @@
 #ifdef SL_CMD_DMA
 
 #include "hash.h"
+#include "flags.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -30,7 +31,6 @@ UART_HandleTypeDef CMD_USART;
 char *cmd_argv[MAX_ARGC]; 
 uint8_t DMAaRxBuffer[DMA_BUFFER_SIZE];
 char DMAUSART_RX_BUF[DMA_BUFFER_SIZE];
-int DMA_RxOK_Flag = 0;
 int buffer_count = 0;
 char uart_buffer[DMA_BUFFER_SIZE];
 
@@ -79,11 +79,11 @@ void usart_exc_DMA() {
 
 void HAL_UART_IDLECallback(UART_HandleTypeDef *huart) {
     if (huart->Instance == CMD_USART.Instance) {
-        uint8_t temp;
+        // uint8_t temp;
         __HAL_UART_CLEAR_IDLEFLAG(huart);  //清除函数空闲标志
-        temp = huart->Instance->SR;
-        temp = huart->Instance->DR;  //读出串口的数据，防止在关闭DMA期间有数据进来，造成ORE错误
-        UNUSED(temp);
+        // temp = huart->Instance->ISR;
+        // temp = huart->Instance->IDR;  //读出串口的数据，防止在关闭DMA期间有数据进来，造成ORE错误
+        // UNUSED(temp);
         // temp = hdma_usart3_rx.Instance->CNDTR;
         // huart->hdmarx->XferCpltCallback(huart->hdmarx);
         // //调用DMA接受完毕后的回调函数，最主要的目的是要将串口的状态设置为Ready，否则无法开启下一次DMA

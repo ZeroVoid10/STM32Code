@@ -28,7 +28,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "simplelib.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

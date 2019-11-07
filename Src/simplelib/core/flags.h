@@ -15,6 +15,8 @@ extern "C" {
 
 #include <stdint.h>
 
+extern int can_exc_callback_flag;
+extern int DMA_RxOK_Flag;
 extern uint8_t _5ms;
 extern int send_wave_flag;
 extern uint8_t test_flag;

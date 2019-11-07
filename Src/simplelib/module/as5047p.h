@@ -3,6 +3,9 @@
 #ifdef __cplusplus
  extern "C" {
 #endif
+#include "simplelib_cfg.h"
+#ifdef SL_AS5047P
+
 #include  "stdint.h" 
 
 #define AS5047PMAXPOS 16384      //0x3fff
@@ -38,6 +41,7 @@ extern Wheel wheel_x;
 extern Wheel wheel_y;
 extern float diameter_x;
 extern float diameter_y;
+#endif // SL_AS5047P
    
 #ifdef __cplusplus
 }
