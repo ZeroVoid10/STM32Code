@@ -28,6 +28,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "nrf24l01.h"
 #include "simplelib.h"
 /* USER CODE END Includes */
 
@@ -49,6 +50,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+uint8_t Rx_DMA_Buffer[32];
 
 /* USER CODE END PV */
 
@@ -97,13 +99,22 @@ int main(void)
   MX_SPI1_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  nrf_init(NULL);
+  HAL_UART_Receive_DMA(&huart1, Rx_DMA_Buffer, 32);
+  __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
+  //simplelib_init(&huart1, &hcan);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    //simplelib_run();
+    if (nrf_send_flag == 1) {
+      nrf_send_flag = 0;
+      nrf_send_data(nrf_tx_data, 32);
+      HAL_GPIO_TogglePin(IND_LED_GPIO_Port, IND_LED_Pin);
+    }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

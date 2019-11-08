@@ -33,14 +33,18 @@ void simplelib_init(UART_HandleTypeDef *cmd_usart, CAN_HandleTypeDef *hcan) {
 }
 
 void simplelib_run(void) {
+    #ifdef SL_CMD
     if (DMA_RxOK_Flag) {
         usart_exc_DMA();
         DMA_RxOK_Flag = 0;
     }
+    #endif // SL_CMD
+    #ifdef SL_CAN
     if (can_exc_callback_flag) {
         can_exc_callback();
         can_exc_callback_flag = 0;
     }
+    #endif // SL_CAN
     if (send_wave_flag) {
         //HAL_Delay(10);
     }

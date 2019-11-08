@@ -25,8 +25,8 @@ extern "C" {
  *******************************************************************************/
 // #define SL_OS                           // OS系统模块
 // #define SL_CAN                          // CAN通信模块
-// #define SL_CMD                          // 串口通信模块
-// #define SL_CMD_DMA                          // 串口通信DMA使用
+#define SL_CMD                          // 串口通信模块
+#define SL_CMD_DMA                          // 串口通信DMA使用
 // #define SL_FLASH                        // Flash 模块
 #define SL_NRF                          // NRF通信模块
 // #define SL_MOTOR_DRIVER					// 驱动卡模块

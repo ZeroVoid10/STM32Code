@@ -21,6 +21,9 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
+#include "nrf24l01.h"
+#include "main.h"
+#include <string.h>
 
 /* USER CODE END 0 */
 
@@ -150,7 +153,21 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 } 
 
 /* USER CODE BEGIN 1 */
-
+extern char Rx_DMA_Buffer[32];
+int nrf_send_flag = 0;
+void HAL_UART_IDLECallback2(UART_HandleTypeDef *huart) {
+  if (huart == &huart1) {
+    uint8_t temp;
+    __HAL_UART_CLEAR_IDLEFLAG(&huart1);
+    temp = hdma_usart1_rx.Instance->CNDTR;
+    UNUSED(temp);
+    HAL_UART_DMAStop(&huart1);
+    strcpy((char*) nrf_tx_data, Rx_DMA_Buffer);
+    memset(Rx_DMA_Buffer, 0, 32);
+    nrf_send_flag = 1;
+    HAL_UART_Receive_DMA(&huart1, (uint8_t*)Rx_DMA_Buffer, 32);
+  }
+}
 /* USER CODE END 1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -33,12 +33,14 @@
 extern UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN Private defines */
+extern int nrf_send_flag;
 
 /* USER CODE END Private defines */
 
 void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+void HAL_UART_IDLECallback2(UART_HandleTypeDef *huart);
 
 /* USER CODE END Prototypes */
 
