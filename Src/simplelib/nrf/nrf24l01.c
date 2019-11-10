@@ -27,9 +27,15 @@
 /*******************************************************************************
  * NRF Private Macro Functions
  *******************************************************************************/
+#ifndef SL_NRF_DMA
 #define NRF_SPI_TransmitReceive(pTxData, pRxData, len)   HAL_SPI_TransmitReceive(&NRF_SPI_Handle, pTxData, pRxData, len, 50)
 #define NRF_SPI_Read(pRxData, len) HAL_SPI_Receive(&NRF_SPI_Handle, pRxData, len, 50)
 #define NRF_SPI_Write(pTxData, len) HAL_SPI_Transmit(&NRF_SPI_Handle, pTxData, len, 50)
+#else
+#define NRF_SPI_TransmitReceive(pTxData, pRxData, len)   HAL_SPI_TransmitReceive_DMA(&NRF_SPI_Handle, pTxData, pRxData, len)
+#define NRF_SPI_Read(pRxData, len) HAL_SPI_Receive_DMA(&NRF_SPI_Handle, pRxData, len)
+#define NRF_SPI_Write(pTxData, len) HAL_SPI_Transmit_DMA(&NRF_SPI_Handle, pTxData, len)
+#endif // SL_SPI_DMA
 #define NRF_CE_ENABLE() HAL_GPIO_WritePin(NRF_SPI_CE_GPIO_PORT, NRF_SPI_CE_PIN, 1)
 #define NRF_CE_DISABLE() HAL_GPIO_WritePin(NRF_SPI_CE_GPIO_PORT, NRF_SPI_CE_PIN, 0)
 
@@ -54,6 +60,7 @@ static void nrf_spi_delay(void);
 uint8_t nrf_rx_data[32];
 uint8_t nrf_tx_data[32];
 uint8_t nrf_rx_len;
+uint8_t nrf_rx_callback_flag = 0;
 #ifdef SL_DEBUG
 can_msg msg;
 #endif // SL_DEBUG
@@ -120,7 +127,7 @@ void nrf_init(NRF_ConfigTypeDef *config) {
 	tx_pipe0_addr_eq = true;
 
 	_nrf_set_tx_addr(nrf_tx_addr, nrf_addr_width);
-	_nrf_set_rx_addr(NRF_PIPE_0, nrf_rx_addr[NRF_PIPE_0], nrf_addr_width);
+	_nrf_set_rx_addr(NRF_PIPE_0, nrf_rx_addr[NRF_PIPE_0], nrf_addr_width + 2);
 	_nrf_set_mode(NRF_PRX);
 	NRF_CE_ENABLE();
 
@@ -163,7 +170,7 @@ uint8_t nrf_send_data(uint8_t *data, int len) {
 
 	// Pipe0-address and tx-address must be equal for ack to work.
 	if (!tx_pipe0_addr_eq && nrf_config.send_crc_ack) {
-		_nrf_set_rx_addr(0, nrf_tx_addr, nrf_addr_width);
+		_nrf_set_rx_addr(0, nrf_tx_addr, nrf_addr_width + 2);
 	}
 
 	if (nrf_config.send_crc_ack) {
@@ -249,13 +256,14 @@ void nrf_irq_handle(void) {
 	} else if (NRF_STATUS_GET_TX_DS(status)) {
 		_nrf_clear_tx_irq();
 		if (!tx_pipe0_addr_eq && nrf_config.send_crc_ack) {
-			_nrf_set_rx_addr(0, nrf_rx_addr[0], nrf_addr_width);
+			_nrf_set_rx_addr(0, nrf_rx_addr[0], nrf_addr_width + 2);
 		}
 		_nrf_flush_tx();
 		NRF_CE_DISABLE();
 		_nrf_set_mode(NRF_PRX);
 		nrf_spi_delay();
 		NRF_CE_ENABLE();
+      	HAL_GPIO_TogglePin(IND_LED_GPIO_Port, IND_LED_Pin);
 	} else if (NRF_STATUS_GET_MAX_RT(status)) {
 		_nrf_clear_maxrt_irq();
 		_nrf_flush_tx();
@@ -273,12 +281,32 @@ void nrf_set_tx_addr(uint8_t *addr, NRF_AW addr_len) {
 	_nrf_set_tx_addr(nrf_tx_addr, nrf_addr_width);
 }
 
-void nrf_set_rx_addr(NRF_PIPE pipe, uint8_t *addr, NRF_AW addr_len) {
-    memcpy(nrf_rx_addr[pipe], addr, addr_len + 2);
-	nrf_addr_width = addr_len;
+void nrf_set_rx_addr(NRF_PIPE pipe, uint8_t *addr, uint8_t len) {
+    memcpy(nrf_rx_addr[pipe], addr, len);
+	//nrf_addr_width = len - 2;
 	tx_pipe0_addr_eq = memcmp(nrf_rx_addr[0], nrf_tx_addr, nrf_addr_width) == 0;
 	nrf_rx_addr_set[pipe] = true;
-	_nrf_set_rx_addr(pipe, addr, nrf_addr_width);
+	_nrf_set_rx_addr(pipe, addr, nrf_addr_width + 2);
+}
+
+void nrf_set_addr_width(uint8_t width) {
+	if (width >= 3 && width <= 5) {
+		_nrf_set_address_width(width - 2);
+	}
+}
+
+void nrf_get_tx_addr(uint8_t** addr, uint8_t *len) {
+	*addr = nrf_tx_addr;
+	*len = (uint8_t)_nrf_get_address_width() + 2;
+}
+
+void nrf_get_rx_addr(NRF_PIPE pipe, uint8_t** addr, uint8_t *len) {
+	*addr = nrf_rx_addr[pipe];
+	if (pipe <= 1) {
+		*len = nrf_addr_width + 2;
+	} else {
+		*len = 1;
+	}
 }
 
 
@@ -380,7 +408,8 @@ void _nrf_set_address_width(NRF_AW aw) {
 }
 
 NRF_AW _nrf_get_address_width(void) {
-    return nrf_read_reg_byte(NRF_REG_SETUP_AW);
+	NRF_AW res = nrf_read_reg_byte(NRF_REG_SETUP_AW);
+    return res;
 }
 
 /* 0x04 -----------------------------------------------------*/
@@ -502,8 +531,8 @@ uint8_t _nrf_rx_power_detect(void) {
 }
 
 /* 0x0A-0x0F -----------------------------------------------------*/
-void _nrf_set_rx_addr(NRF_PIPE pipe, uint8_t *address, NRF_AW aw) {
-    nrf_write_reg(NRF_REG_RX_ADDR_P0 + pipe, address, aw + 2);
+void _nrf_set_rx_addr(NRF_PIPE pipe, uint8_t *address, uint8_t len) {
+    nrf_write_reg(NRF_REG_RX_ADDR_P0 + pipe, address, len);
 }
 
 /* 0x10 -----------------------------------------------------*/
@@ -705,6 +734,7 @@ __weak void nrf_receive_callback(uint8_t *data, int len) {
 	temp_data[8] = 0x01;
 	nrf_send_data(temp_data, 10);
 	#endif // SL_DEBUG
+	nrf_rx_callback_flag = 1;
 }
 
 __weak void nrf_send_callback(void) {

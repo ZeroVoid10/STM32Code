@@ -4,8 +4,6 @@
 
 #include "simplelib_cfg.h"
 #ifdef SL_FLASH
-#include "stm32f4xx_hal.h"
-#include "main.h"
 
 #define u32 uint32_t
 #define u16 uint16_t

@@ -176,6 +176,7 @@ typedef struct {
  *******************************************************************************/
 extern uint8_t nrf_rx_data[32];
 extern uint8_t nrf_tx_data[32];
+extern uint8_t nrf_rx_callback_flag;
 
 
 /*******************************************************************************
@@ -298,7 +299,10 @@ void nrf_stop(void);
 uint8_t nrf_send_data(uint8_t *data, int len);
 uint8_t nrf_read_rx_data(uint8_t *data, uint8_t *len, NRF_PIPE *pipe); 
 void nrf_set_tx_addr(uint8_t *addr, NRF_AW addr_len);
-void nrf_set_rx_addr(NRF_PIPE pipe, uint8_t *addr, NRF_AW addr_len);
+void nrf_set_rx_addr(NRF_PIPE pipe, uint8_t *addr, uint8_t len);
+void nrf_set_addr_width(uint8_t width);
+void nrf_get_tx_addr(uint8_t** addr, uint8_t *len);
+void nrf_get_rx_addr(NRF_PIPE pipe, uint8_t** addr, uint8_t *len);
 void nrf_irq_handle(void);
 __weak void nrf_receive_callback(uint8_t *data, int len);
 __weak void nrf_send_callback(void);
@@ -344,7 +348,7 @@ uint8_t _nrf_get_arc_cnt(void);
 uint8_t _nrf_rx_power_detect(void);
 
 /* 0x0A-0x0F -----------------------------------------------------*/
-void _nrf_set_rx_addr(NRF_PIPE pipe, uint8_t *address, NRF_AW aw);
+void _nrf_set_rx_addr(NRF_PIPE pipe, uint8_t *address, uint8_t len);
 
 /* 0x10 -----------------------------------------------------*/
 void _nrf_set_tx_addr(uint8_t *address, NRF_AW aw);

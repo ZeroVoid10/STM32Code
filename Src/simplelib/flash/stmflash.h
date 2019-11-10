@@ -3,8 +3,12 @@
 #include "simplelib_cfg.h"
 #ifdef SL_FLASH
 
-#include "stm32f4xx_hal.h"
 #include "main.h"
+#include "flash.h"
+#define FLASH_WAITETIME  50000          //FLASH等待超时时间
+
+#ifdef STM32F40xx
+#include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal_flash.h"
 #include "usart.h"
 //////////////////////////////////////////////////////////////////////////////////	 
@@ -20,14 +24,10 @@
 //All rights reserved									  
 ////////////////////////////////////////////////////////////////////////////////// 	
 
-#include "flash.h"
-
 //FLASH起始地址
 #define STM32_FLASH_BASE 0x08000000 	//STM32 FLASH的起始地址
 #define FLASH_SAVE_ADDR  0X080A0000     //设置FLASH 保存地址(必须为4的倍数，且所在扇区,要大于本代码所占用到的扇区.
-#define FLASH_WAITETIME  50000          //FLASH等待超时时间
 
-extern float flash_data[FLASH_SIZE];
 extern float flash_chassis_init_x, flash_chassis_init_y;
 
 //FLASH 扇区的起始地址
@@ -44,12 +44,28 @@ extern float flash_chassis_init_x, flash_chassis_init_y;
 #define ADDR_FLASH_SECTOR_10    ((u32)0x080C0000) 	//扇区10起始地址,128 Kbytes  
 #define ADDR_FLASH_SECTOR_11    ((u32)0x080E0000) 	//扇区11起始地址,128 Kbytes 
 
- 
 void STMFLASH_Write(u32 WriteAddr,u32 *pBuffer,u32 NumToWrite);		//从指定地址开始写入指定长度的数据
 void STMFLASH_Read(u32 ReadAddr,u32 *pBuffer,u32 NumToRead);   		//从指定地址开始读出指定长度的数据
-void write_prams();
-void load_prams();
+
 //测试写入
 void Test_Write(u32 WriteAddr,u32 WriteData);	
+#endif // STM32F407xx
+
+#ifdef STM32F072xB
+
+#include "stm32f0xx_hal.h"
+#include "stm32f0xx_hal_flash.h"
+#define STM32_FLASH_BASE					0x08000000 // STM32F07xB FLASH 地址
+#define FLASH_SAVE_ADDR                     0x08020000 // FLASH 内容保存
+
+// TODO: ZeroVoid	due:NONE	Finish sector addr 0~63 sector may no finish anyway.
+#define ADDR_FLASH_SECTOR_0					((u32)0x08000000) // Sector 0, 4KB
+
+
+#endif // STM32F072xB 
+extern float flash_data[FLASH_SIZE];
+ 
+void write_prams();
+void load_prams();
 #endif // SL_FLASH
 #endif

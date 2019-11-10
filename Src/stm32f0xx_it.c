@@ -202,10 +202,10 @@ void USART1_IRQHandler(void)
     return ;
   }
   #endif // SL_CMD
-  if(__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE) != RESET){
+  /* if(__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE) != RESET){
     HAL_UART_IDLECallback2(&huart1);
     return ;
-  }
+  } */
 
   /* USER CODE END USART1_IRQn 0 */
   HAL_UART_IRQHandler(&huart1);

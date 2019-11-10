@@ -48,6 +48,7 @@ int cmd_exec(int argc,char *argv[]);
 void cmd_help_func(int argc,char *argv[]);   
 void cmd_init(void);
 void cmd_add(char *cmd_name, char *cmd_usage, void (*cmd_func)(int argc, char *argv[]));
+void cmd_err_arg_default_handle(char *prompt);
 
 void send_wave(float arg1, float arg2, float arg3, float arg4);
 void uprintf(char *fmt, ...);

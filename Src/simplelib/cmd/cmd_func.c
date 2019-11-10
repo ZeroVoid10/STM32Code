@@ -2,10 +2,68 @@
 #include "can_utils.h"
 #include "can_func.h"
 #include "flags.h"
-#include "mtr_driver.h"
 #include <stdlib.h>
 
+#ifdef SL_NRF_COMM
+#include "nrf24l01.h"
+void cmd_nrf_set_tx_addr(int argc, char *argv[]) {
+    if (argc < 4) {
+        cmd_err_arg_default_handle(NULL);
+        return ;
+    }
+    uint8_t addr[argc-1];
+    uprintf("set nrf addr width %d\r\nset addr: ", argc - 1);
+    nrf_set_addr_width(argc - 1);
+    for (int i = 1; i < argc; i++) {
+        addr[i-1] = (uint8_t) atoi(argv[i]);
+        uprintf("%3d ", addr[i-1]);
+    }
+    uprintf("\r\n");
+    nrf_set_tx_addr(addr, argc-3);
+} 
+
+void cmd_nrf_get_tx_addr(int argc, char *argv[]) {
+    uint8_t *addr = NULL, len;
+    nrf_get_tx_addr(&addr, &len);
+    uprintf("addr len: %d\r\naddr: ", len);
+    for (int i = 0; i<len; i++) {
+        uprintf("%3d ", addr[i]);
+    }
+    uprintf("\r\n");
+}
+
+void cmd_nrf_set_rx_addr(int argc, char *argv[]) {
+    if (argc < 2) {
+        cmd_err_arg_default_handle(NULL);
+        return ;
+    }
+    NRF_PIPE pipe = atoi(argv[1]);
+    uint8_t addr[argc - 2];
+    nrf_set_addr_width(argc - 1);
+    for (int i = 2; i < argc; i++) {
+        addr[i-1] = (uint8_t) atoi(argv[i]);
+    }
+    nrf_set_rx_addr(pipe, addr, argc-2);
+}
+
+void cmd_nrf_get_rx_addr(int argc, char *argv[]) {
+    if (argc == 2) {
+        uint8_t *addr = NULL, len;
+        NRF_PIPE pipe = atoi(argv[1]);
+        nrf_get_rx_addr(pipe, &addr, &len);
+        uprintf("len %d\r\n", len);
+        for (int i = 0; i<len; i++) {
+            uprintf("%3d ", addr[i]);
+        }
+        uprintf("\r\n");
+    } else {
+        cmd_err_arg_default_handle(NULL);
+    }
+}
+#endif // SL_NRF_COMM
+
 #ifdef SL_MOTOR_DRIVER
+#include "mtr_driver.h"
 #ifdef EN_VESC_MOTOR_DRIVER
 void cmd_vesc_set_duty(int argc, char *argv[]);
 void cmd_vesc_set_rpm(int argc, char *argv[]);
@@ -119,13 +177,14 @@ void cmd_md_set_position(int argc, char *argv[]) {
 #endif // EN_MOTOR_DRIVER
 #endif // SL_MOTOR_DRIVER
 
+
+#ifdef SL_DEBUG
 void cmd_hello_func(int argc, char *argv[]) {
     #ifdef SL_CMD
     uprintf("hello world\r\n");
     #endif // SL_CMD
 }
 
-#ifdef SL_DEBUG
 void cmd_can_test(int argc, char *argv[]) {
     uprintf("can send test\r\n");
     can_send_test();
@@ -148,6 +207,13 @@ void cmd_wave_test(int argc, char *argv[]) {
 #endif // SL_DEBUG
 
 void cmd_func_init(void) {
+
+    #ifdef SL_NRF_COMM
+    cmd_add("nrf_set_tx", "set tx addr", cmd_nrf_set_tx_addr);
+    cmd_add("nrf_get_tx", "get tx addr", cmd_nrf_get_tx_addr);
+    cmd_add("nrf_set_rx", "set rx addr", cmd_nrf_set_rx_addr);
+    cmd_add("nrf_get_rx", "get rx addr", cmd_nrf_get_rx_addr);
+    #endif // SL_NRF_COMM
 
     #ifdef SL_MOTOR_DRIVER
     #ifdef EN_MOTOR_DRIVER

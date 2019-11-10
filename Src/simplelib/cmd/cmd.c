@@ -15,6 +15,7 @@
 
 #include "hash.h"
 #include "flags.h"
+#include "nrf24l01.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -47,7 +48,7 @@ static void _cmd_help(const void *key, void **value, void *c1);
 
 void usart_DMA_init(UART_HandleTypeDef *cmd_usart) {
     CMD_USART = *cmd_usart;
-    HAL_UART_Receive_DMA(&CMD_USART, (uint8_t *)&DMAaRxBuffer, 99);
+    HAL_UART_Receive_DMA(&CMD_USART, (uint8_t *)&DMAaRxBuffer, 32);
     cmd_init();
     __HAL_UART_ENABLE_IT(&CMD_USART,UART_IT_IDLE); // 开启空闲中断
 }
@@ -64,7 +65,7 @@ void cmd_init(void) {
     if (cmd_table == NULL) {
         cmd_table = HashTable_create(str_cmp, hashStr, NULL);
     }
-    cmd_add("help", "show cmd usage", cmd_help_func);
+    cmd_add("nrf_help", "nrf communication cmd usage", cmd_help_func);
 }
 
 void usart_exc_DMA() {
@@ -129,10 +130,13 @@ int cmd_parse(char *cmd_line,int *argc,char *argv[]){
 int cmd_exec(int argc,char *argv[]){
     struct cmd_info *cmd = (struct cmd_info*)HashTable_get(cmd_table, argv[0]);
     if (cmd != NULL) {
+        // TODO: ZeroVoid	change cmd_func to have a int return.
         cmd->cmd_func(argc, argv);
+        uprintf("[Done]\r\n");
         return 0;
     }
-    uprintf("cmd not find\r\n");
+    //uprintf("cmd not find\r\n");
+    nrf_send_data(nrf_tx_data, 32);
     return 1;
 }
 
@@ -163,6 +167,18 @@ void cmd_add(char *cmd_name, char *cmd_usage, void (*cmd_func)(int argc, char *a
     new_cmd->cmd_func = cmd_func;
     new_cmd->cmd_usage = usage;
     HashTable_insert(cmd_table, name, new_cmd);
+}
+
+/**
+ * @brief	参数错误默认处理函数
+ * @param   prompt  提示输出显示;可为NULL
+ */
+void cmd_err_arg_default_handle(char *prompt) {
+    if (prompt) {
+        uprintf(prompt);
+    } else {
+        uprintf("[ERROR] Arg! Nothing Done.\r\n");
+    }
 }
 
 char print_buffer[PRINT_BUFFER_SIZE];

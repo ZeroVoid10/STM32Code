@@ -2,7 +2,10 @@
 #ifdef SL_FLASH
 
 #include "math.h"
+#ifdef SL_CMD
 #include "cmd.h"
+#endif // SL_CMD
+
 //////////////////////////////////////////////////////////////////////////////////	 
 //本程序只供学习使用，未经作者许可，不得用于其它任何用途
 //ALIENTEK STM32F429开发板
@@ -19,6 +22,7 @@
 //faddr:读地址 
 //返回值:对应数据.
 float flash_data[FLASH_SIZE]={0};
+#ifdef STM32F407xx
 u8 STMFLASH_GetFlashSector(u32 addr);
 
 void write_prams()
@@ -162,5 +166,6 @@ void Test_Write(u32 WriteAddr,u32 WriteData)
 {
 	STMFLASH_Write(WriteAddr,&WriteData,1);//写入一个字 
 }
+#endif // STM32F407xx
 
 #endif // SL_FLASH
