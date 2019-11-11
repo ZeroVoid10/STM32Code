@@ -14,6 +14,13 @@
 extern "C" {
 #endif
 
+#define NRF_TX_ADDR_OFFSET					        0 // 
+#define NRF_RX_PIPE0_ADDR_OFFSET					5 // 
+#define NRF_RX_PIPE1_ADDR_OFFSET					10 // 
+#define NRF_RX_SET_OFFSET					        15 // 
+#define NRF_RX_PIPE2_5_ADDR_OFFSET					21 // 
+#define NRF_NAME_OFFSET					            25 // 
+
 void nrf_rx_date_process(void);
 
 #ifdef __cplusplus

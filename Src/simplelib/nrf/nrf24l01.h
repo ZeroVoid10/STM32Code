@@ -164,7 +164,6 @@ typedef struct {
  */
 typedef struct {
 	SPI_HandleTypeDef *hspi;
-	NRF_ConfigTypeDef *conf;
 	uint8_t *tx_data;
 	uint8_t *rx_data;
 	uint8_t *tx_addr;
