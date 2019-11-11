@@ -56,7 +56,7 @@ void Test_Write(u32 WriteAddr,u32 WriteData);
 #include "stm32f0xx_hal.h"
 #include "stm32f0xx_hal_flash.h"
 #define STM32_FLASH_BASE					0x08000000 // STM32F07xB FLASH 地址
-#define FLASH_SAVE_ADDR                     0x08020000 // FLASH 内容保存
+#define FLASH_SAVE_ADDR                     0x08010000 // FLASH 内容保存
 
 // TODO: ZeroVoid	due:NONE	Finish sector addr 0~63 sector may no finish anyway.
 #define ADDR_FLASH_SECTOR_0					((u32)0x08000000) // Sector 0, 4KB

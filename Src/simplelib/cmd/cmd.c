@@ -74,7 +74,7 @@ void usart_exc_DMA() {
     erro_n = cmd_parse((char *)DMAUSART_RX_BUF, &cmd_argc, cmd_argv);  //解析命令
     erro_n = cmd_exec(cmd_argc, cmd_argv);                             //执行命令
     UNUSED(erro_n);
-    memset(DMAUSART_RX_BUF, 0, 98);
+    memset(DMAUSART_RX_BUF, 0, DMA_BUFFER_SIZE);
     buffer_count = 0;
 }
 
@@ -96,7 +96,7 @@ void HAL_UART_IDLECallback(UART_HandleTypeDef *huart) {
         if (DMAUSART_RX_BUF[0] != '\0') {
             DMA_RxOK_Flag = 1;
         }
-        memset(DMAaRxBuffer, 0, 98);
+        memset(DMAaRxBuffer, 0, DMA_BUFFER_SIZE);
         HAL_UART_Receive_DMA(&CMD_USART, (uint8_t *)&DMAaRxBuffer, 99);
     }
 }
@@ -146,7 +146,7 @@ int cmd_exec(int argc,char *argv[]){
  * @return	None
  */
 void cmd_help_func(int argc,char *argv[]){
-    uprintf("help:\r\n");
+    uprintf("[NRF] Help:\r\n");
     HashTable_map(cmd_table, _cmd_help, NULL);
 }
 

@@ -8,8 +8,10 @@
  *******************************************************************************/
 #include "nrf_comm.h"
 #include "nrf24l01.h"
+#include "cmd.h"
 
-void rx_date_process(void) {
+void nrf_rx_date_process(void) {
     
+    uprintf_to(&huart1, (char*)nrf_rx_data);
     nrf_send_data(nrf_tx_data, 32);
 }

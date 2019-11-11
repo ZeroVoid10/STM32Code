@@ -31,6 +31,7 @@
 #include "nrf24l01.h"
 #include "simplelib.h"
 #include "nrf_comm.h"
+#include "stmflash.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -100,10 +101,11 @@ int main(void)
   MX_SPI1_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  nrf_init(NULL);
   // HAL_UART_Receive_DMA(&huart1, Rx_DMA_Buffer, 32);
   // __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
   simplelib_init(&huart1, &hcan);
+  load_prams();
+  nrf_init(NULL);  // nrf init must after flash load prams!!
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -117,7 +119,12 @@ int main(void)
     } */
     if (nrf_rx_callback_flag == 1) {
       nrf_rx_callback_flag = 0;
-      uprintf_to(&huart1, (char*)nrf_rx_data);
+      nrf_rx_date_process();
+      // uprintf_to(&huart1, (char*)nrf_rx_data);
+    }
+    if (nrf_max_rt_callback_flag == 1) {
+      nrf_max_rt_callback_flag = 0;
+
     }
     /* USER CODE END WHILE */
 

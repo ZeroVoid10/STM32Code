@@ -26,7 +26,7 @@
 #define MAX_CMD_INFO_LENGTH 64
 #define MAX_CMD_LINE_LENGTH 128
 #define MAX_ARGC 12   //
-#define DMA_BUFFER_SIZE 99
+#define DMA_BUFFER_SIZE 32
 #define PRINT_BUFFER_SIZE 101
 
 extern UART_HandleTypeDef CMD_USART;

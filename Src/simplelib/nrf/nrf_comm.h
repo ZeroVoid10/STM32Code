@@ -14,7 +14,7 @@
 extern "C" {
 #endif
 
-void rx_date_process(void);
+void nrf_rx_date_process(void);
 
 #ifdef __cplusplus
 }

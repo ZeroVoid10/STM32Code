@@ -176,7 +176,12 @@ typedef struct {
  *******************************************************************************/
 extern uint8_t nrf_rx_data[32];
 extern uint8_t nrf_tx_data[32];
+extern uint8_t nrf_tx_addr[5];
+extern uint8_t nrf_rx_addr[6][5];
 extern uint8_t nrf_rx_callback_flag;
+extern uint8_t nrf_max_rt_callback_flag;
+extern NRF_AW nrf_addr_width;
+extern bool nrf_rx_addr_set[6];
 
 
 /*******************************************************************************
@@ -306,6 +311,7 @@ void nrf_get_rx_addr(NRF_PIPE pipe, uint8_t** addr, uint8_t *len);
 void nrf_irq_handle(void);
 __weak void nrf_receive_callback(uint8_t *data, int len);
 __weak void nrf_send_callback(void);
+__weak void nrf_max_rt_callback(void);
 
 /*******************************************************************************
  * NRF Driver Functions
@@ -318,6 +324,7 @@ void _nrf_set_mode(NRF_MODE mode);
 /* 0x01-x03 -----------------------------------------------------*/
 void _nrf_enable_pipe_autoack(uint8_t pipes);
 void _nrf_enable_pipe_address(uint8_t pipes);
+void _nrf_disable_pipe_address(uint8_t pipes);
 void _nrf_set_address_width(NRF_AW aw);
 NRF_AW _nrf_get_address_width(void);
 

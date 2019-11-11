@@ -46,7 +46,7 @@ extern "C" {
 
 /* Flash Configuration -----------------------------------------------------*/
 #ifdef SL_FLASH
-#define FLASH_SIZE                      10 // Flash float数组大小
+#define FLASH_SIZE                      25 // Flash float数组大小
 #endif // SL_FLASH
 
 /* NRF Configuration -----------------------------------------------------*/
