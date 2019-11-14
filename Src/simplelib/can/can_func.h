@@ -12,6 +12,7 @@ void can_func_init();
 void can_suc_rx(can_msg *data);
 void can_show_button(can_msg *data);
 void can_show_rocker(can_msg *data);
+void can_rx_callback(can_msg *data);
     
 #endif // SL_CAN
 #ifdef __cplusplus

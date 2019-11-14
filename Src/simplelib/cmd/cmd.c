@@ -11,11 +11,10 @@
 
 #include "cmd.h"
 
-#ifdef SL_CMD_DMA
+#ifdef SL_CMD
 
 #include "hash.h"
 #include "flags.h"
-#include "nrf24l01.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -49,7 +48,9 @@ static void _cmd_help(const void *key, void **value, void *c1);
 void usart_DMA_init(UART_HandleTypeDef *cmd_usart) {
     CMD_USART = *cmd_usart;
     HAL_UART_Receive_DMA(&CMD_USART, (uint8_t *)&DMAaRxBuffer, 32);
+    #ifdef SL_CMD
     cmd_init();
+    #endif // SL_CMD
     __HAL_UART_ENABLE_IT(&CMD_USART,UART_IT_IDLE); // 开启空闲中断
 }
 
@@ -91,13 +92,23 @@ void HAL_UART_IDLECallback(UART_HandleTypeDef *huart) {
         HAL_UART_DMAStop(&CMD_USART);  //停止本次DMA
 
         uint8_t *clr = DMAaRxBuffer-1;
+        // 一些芯片板子(F103 F072) 似乎并不需要这一行, 但STM32F407需要
         while(*(++clr) == '\0' && clr < DMAaRxBuffer+DMA_BUFFER_SIZE);
-        strcpy((char *)DMAUSART_RX_BUF,(char *)clr);
+        strncpy((char *)DMAUSART_RX_BUF,(char *)clr, DMA_BUFFER_SIZE - 1);
+        #ifdef SL_NRF_COMM
+        nrf_handle.tx_len = strlen(DMAUSART_RX_BUF);
+        strncpy((char*)(nrf_tx_data + NRF_PCK_HEADER_SIZE), DMAUSART_RX_BUF, nrf_handle.tx_len);
+        nrf_handle.nrf_data_from = NRF_UART;
+        nrf_handle.nrf_data_to = NRF_UART;
+        #ifndef SL_CMD
+        nrf_flow_state = NRF_COMM_SEND;
+        #endif // SL_CMD
+        #endif // SL_NRF_COMM
         if (DMAUSART_RX_BUF[0] != '\0') {
             DMA_RxOK_Flag = 1;
         }
         memset(DMAaRxBuffer, 0, DMA_BUFFER_SIZE);
-        HAL_UART_Receive_DMA(&CMD_USART, (uint8_t *)&DMAaRxBuffer, 99);
+        HAL_UART_Receive_DMA(&CMD_USART, (uint8_t *)&DMAaRxBuffer, DMA_BUFFER_SIZE);
     }
 }
 
@@ -136,7 +147,9 @@ int cmd_exec(int argc,char *argv[]){
         return 0;
     }
     //uprintf("cmd not find\r\n");
-    nrf_send_data(nrf_tx_data, 32);
+    #ifdef SL_NRF_COMM
+    nrf_flow_state = NRF_COMM_SEND;
+    #endif // SL_NRF_COMM
     return 1;
 }
 
@@ -215,7 +228,7 @@ void uprintf_to(UART_HandleTypeDef *huart, char *fmt, ...) {
     size = vsnprintf(print_buffer, PRINT_BUFFER_SIZE, fmt, arg_ptr);
     va_end(arg_ptr);
 
-    //huart->gState = HAL_UART_STATE_READY;
+    huart->gState = HAL_UART_STATE_READY;
     HAL_UART_Transmit_DMA(huart, (uint8_t *)print_buffer, size);
     //while(huart->hdmatx->State != HAL_DMA_STATE_READY);
     // HAL_UART_Transmit(huart,(uint8_t *)uart_buffer,size,1000);
@@ -253,4 +266,4 @@ static void _cmd_help(const void *key, void **value, void *c1) {
     uprintf("%s: %s\r\n", key, usage);
 }
 
-#endif // SL_CMD_DMA
+#endif // SL_CMD

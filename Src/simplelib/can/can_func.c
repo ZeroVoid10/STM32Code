@@ -16,6 +16,8 @@ void can_func_init() {
     #endif
 }
 
+__weak void can_rx_callback(can_msg *data) {}
+
 #ifdef SL_DEBUG
 void can_suc_rx(can_msg *data) {
     uprintf("can rx ok\r\n");

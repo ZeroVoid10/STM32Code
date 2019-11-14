@@ -3,7 +3,7 @@
  * File Name:		can_utils.c
  * Description:		CAN 工具函数
  * Author:			ZeroVoid
- * Version:			0.1
+ * Version:			0.2.1
  * Data:			2019/09/23 Mon 13:59
  *******************************************************************************/
 // TODO: ZeroVoid	due:9/26	错误处理
@@ -21,6 +21,7 @@
 
 CAN_HandleTypeDef HCAN;
 
+int can_rx_callback_flag = 0;
 CAN_TxHeaderTypeDef TxHeader;
 CAN_RxHeaderTypeDef RxHeader;
 uint32_t TxMailbox;
@@ -63,6 +64,14 @@ void can_exc_callback(void) {
     void (*callback_func)(can_msg *) = (void(*)(can_msg*))HashTable_get(can_callback_table, &rx_id);
     if (callback_func) {
         callback_func(&rx_buffer);
+    }
+    if (can_rx_callback_flag) {
+        #ifdef SL_NRF_COMM
+        if (nrf_all_can_send || rx_id == NRF_CAN_SID) {
+            _can_rx_nrf_callback(&rx_id, &rx_buffer);
+        }
+        #endif // SL_NRF_COMM
+        can_rx_callback(&rx_buffer);
     }
 }
 
@@ -118,8 +127,11 @@ void HAL_CAN_RxFifo0FullCallback(CAN_HandleTypeDef *hcan) {
     return ;
 }
 
+__weak void can_rx_callback(can_msg *data) {}
+
 void CAN_config(CAN_HandleTypeDef *hcan) {
     
+    // FIXME: ZeroVoid	2019/11/13	 len 无法为零, 从而不过滤CAN
     can_std_mask_filter_conf(hcan, std_id, sizeof(std_id)/sizeof(std_id[0]), 0);
     //can_std_list_filter_conf(hcan, 325, 0);
 

@@ -113,11 +113,13 @@ int main(void)
   while (1)
   {
     simplelib_run();
+    nrf_main();
     /* if (nrf_send_flag == 1) {
       nrf_send_flag = 0;
       rx_data_process();
     } */
-    if (nrf_rx_callback_flag == 1) {
+
+    /* if (nrf_rx_callback_flag == 1) {
       nrf_rx_callback_flag = 0;
       nrf_rx_date_process();
       // uprintf_to(&huart1, (char*)nrf_rx_data);
@@ -125,7 +127,8 @@ int main(void)
     if (nrf_max_rt_callback_flag == 1) {
       nrf_max_rt_callback_flag = 0;
 
-    }
+    } */
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

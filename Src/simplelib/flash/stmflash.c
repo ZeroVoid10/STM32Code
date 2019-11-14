@@ -75,6 +75,7 @@ void load_prams() {
 	for (int i = 2; i <= 5; i++) {
 		memcpy(nrf_rx_addr[i], ((uint8_t*)flash_data) + 19 + i, 1);
 	}
+	memcpy(&nrf_handle.nrf_addr_len, ((uint8_t*)flash_data) + NRF_ADDR_LEN_OFFSET, 1);
 	#endif // SL_NRF
 }
 

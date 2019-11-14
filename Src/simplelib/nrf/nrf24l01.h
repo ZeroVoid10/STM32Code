@@ -142,6 +142,18 @@ typedef enum {
 } NRF_PIPE;
 
 /**
+ * @brief	NRF main function control state
+ * @note	目前只完成了回调部分函数
+ */
+typedef enum nrf_flow_control {
+	NRF_IDLE,
+    NRF_TX_CALLBACK,
+    NRF_RX_CALLBACK,
+    NRF_MAX_RT_CALLBACK,
+    NRF_COMM_SEND
+} NRF_FLOW_STATE;
+
+/**
  * @brief	NRF config
  * @note	NRF 初始化使用
  */
@@ -164,10 +176,18 @@ typedef struct {
  */
 typedef struct {
 	SPI_HandleTypeDef *hspi;
-	uint8_t *tx_data;
-	uint8_t *rx_data;
 	uint8_t *tx_addr;
+	uint8_t *tx_data;
+	uint8_t tx_len;
+
 	uint8_t **rx_addr;
+	uint8_t *rx_data;
+	uint8_t rx_len;
+	NRF_PIPE rx_pipe;
+
+	uint8_t nrf_data_from;
+	uint8_t nrf_data_to;
+	uint8_t nrf_addr_len;
 } NRF_Handle;
 
 /*******************************************************************************
@@ -177,9 +197,10 @@ extern uint8_t nrf_rx_data[32];
 extern uint8_t nrf_tx_data[32];
 extern uint8_t nrf_tx_addr[5];
 extern uint8_t nrf_rx_addr[6][5];
-extern uint8_t nrf_rx_callback_flag;
-extern uint8_t nrf_max_rt_callback_flag;
-extern NRF_AW nrf_addr_width;
+extern NRF_FLOW_STATE nrf_flow_state;
+extern uint8_t nrf_all_can_send;
+extern NRF_Handle nrf_handle;
+// extern NRF_AW nrf_addr_width;
 extern bool nrf_rx_addr_set[6];
 
 
@@ -302,15 +323,15 @@ void nrf_init(NRF_ConfigTypeDef *config);
 void nrf_stop(void);
 uint8_t nrf_send_data(uint8_t *data, int len);
 uint8_t nrf_read_rx_data(uint8_t *data, uint8_t *len, NRF_PIPE *pipe); 
-void nrf_set_tx_addr(uint8_t *addr, NRF_AW addr_len);
+void nrf_set_tx_addr(uint8_t *addr, uint8_t addr_len);
 void nrf_set_rx_addr(NRF_PIPE pipe, uint8_t *addr, uint8_t len);
 void nrf_set_addr_width(uint8_t width);
 void nrf_get_tx_addr(uint8_t** addr, uint8_t *len);
 void nrf_get_rx_addr(NRF_PIPE pipe, uint8_t** addr, uint8_t *len);
 void nrf_irq_handle(void);
-__weak void nrf_receive_callback(uint8_t *data, int len);
-__weak void nrf_send_callback(void);
-__weak void nrf_max_rt_callback(void);
+void _nrf_receive_callback(uint8_t *data, int len);
+void _nrf_send_callback(void);
+void _nrf_max_rt_callback(void);
 
 /*******************************************************************************
  * NRF Driver Functions
@@ -357,7 +378,7 @@ uint8_t _nrf_rx_power_detect(void);
 void _nrf_set_rx_addr(NRF_PIPE pipe, uint8_t *address, uint8_t len);
 
 /* 0x10 -----------------------------------------------------*/
-void _nrf_set_tx_addr(uint8_t *address, NRF_AW aw);
+void _nrf_set_tx_addr(uint8_t *address, uint8_t addr_len);
 
 /* 0x11-0x16 -----------------------------------------------------*/
 uint8_t _nrf_get_payload_width(void);

@@ -36,6 +36,7 @@ extern uint32_t TxMailbokx;
 extern can_msg can_rx_data;
 extern can_msg can_tx_data;
 extern int can_exc_callback_flag;
+extern int can_rx_callback_flag;
 
 void can_init(CAN_HandleTypeDef *hcan);
 int can_send_msg(uint16_t id, can_msg *msg);
@@ -48,6 +49,7 @@ void can_send_test(void);
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan);
 void HAL_CAN_RxFifo0FullCallback(CAN_HandleTypeDef *hcan);
+void can_rx_callback(can_msg *data);
 
 #ifdef DEBUG
 void can_send_test(void);

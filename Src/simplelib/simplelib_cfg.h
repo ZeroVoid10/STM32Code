@@ -21,7 +21,8 @@ extern "C" {
 // #define SL_OS                           // OS系统模块
 #define SL_CAN                          // CAN通信模块
 #define SL_CMD                          // 串口通信模块
-#define SL_CMD_DMA                          // 串口通信DMA使用
+// #define SL_CMD_DMA                          // 串口通信DMA使用
+#define SL_USART_DMA                    // 串口DMA
 #define SL_FLASH                        // Flash 模块
 #define SL_NRF                          // NRF通信模块
 #define SL_NRF_COMM                     // NRF 通信通信协议
@@ -31,6 +32,7 @@ extern "C" {
 // #define SL_AS5047P                      // AS5047P 
 
 // #define SL_DEBUG                        // Simplelib debug macro
+#define SL_NRF_DEBUG					 // 
 #define SL_COMP_V01					    // 兼容V0.1版本
 
 /* Motor Driver Configuration -----------------------------------------------------*/

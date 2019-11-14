@@ -9,19 +9,21 @@
 #include "stmflash.h"
 #include <string.h>
 void cmd_nrf_set_tx_addr(int argc, char *argv[]) {
-    if (argc < 4) {
+    if (argc < 4 || argc > 6) {
         cmd_err_arg_default_handle(NULL);
         return ;
     }
     uint8_t addr[argc-1];
     uprintf("[NRF]\r\nset nrf addr width %d\r\nset addr: ", argc - 1);
     nrf_set_addr_width(argc - 1);
+    memcpy(((uint8_t*)flash_data)+NRF_ADDR_LEN_OFFSET, &nrf_handle.nrf_addr_len, 1);
     for (int i = 1; i < argc; i++) {
         addr[i-1] = (uint8_t) atoi(argv[i]);
         uprintf("%3d ", addr[i-1]);
     }
     uprintf("\r\n");
-    nrf_set_tx_addr(addr, argc-3);
+    nrf_set_tx_addr(addr, argc-1);
+    memcpy(((uint8_t*)flash_data) + NRF_ADDR_LEN_OFFSET, &nrf_handle.nrf_addr_len, 1);
     memcpy(flash_data, nrf_tx_addr, 5);
     write_prams();
 } 
@@ -43,16 +45,18 @@ void cmd_nrf_set_rx_addr(int argc, char *argv[]) {
     }
     NRF_PIPE pipe = atoi(argv[1]);
     uint8_t addr[argc - 2];
-    //nrf_set_addr_width(argc - 2);
     for (int i = 2; i < argc; i++) {
         addr[i-2] = (uint8_t) atoi(argv[i]);
     }
-    nrf_set_rx_addr(pipe, addr, argc-2);
-    if (pipe <= 1) {
-        memcpy(((uint8_t*)flash_data) + 5*pipe, nrf_rx_addr[pipe], 5);
+    if (pipe <= 1 && argc >= 5) {
+        nrf_set_rx_addr(pipe, addr, argc - 2);
+        nrf_set_addr_width(argc - 2);
+        memcpy(((uint8_t*)flash_data) + 5*(pipe+1), nrf_rx_addr[pipe], 5);
     } else if (pipe <= 5) {
+        nrf_set_rx_addr(pipe, addr, argc - 2);
         memcpy(((uint8_t*)flash_data) + 19 + pipe, nrf_rx_addr[pipe], 1);
     }
+    memcpy(((uint8_t*)flash_data) + NRF_ADDR_LEN_OFFSET, &nrf_handle.nrf_addr_len, 1);
     memcpy(((uint8_t*)flash_data) + 15, nrf_rx_addr_set, 6);
     write_prams();
 }
@@ -109,8 +113,9 @@ void cmd_nrf_disable_rx_pipe(int argc, char *argv[]) {
 }
 
 void cmd_nrf_get_state(int argc, char *argv[]) {
-    int i = 0, j = 0, len = nrf_addr_width + 2;
+    int i = 0, j = 0, len = nrf_handle.nrf_addr_len;
     uprintf("[NRF] state\r\nChannel %dM\r\nAddr Width %d\r\n", _nrf_get_frequency(),len);
+    uprintf("Recived CAN SID: %s\r\n", (nrf_all_can_send)? "ALL":"230");
     uprintf("TX Addr ");
     for (i = 0; i<len; i++) {
         uprintf("%3d ", nrf_tx_addr[i]);
@@ -122,6 +127,17 @@ void cmd_nrf_get_state(int argc, char *argv[]) {
             uprintf("%3d ", nrf_rx_addr[i][j]);
         }
         uprintf("%s\r\n", nrf_rx_addr_set[i]? "EN":"");
+    }
+}
+
+void cmd_nrf_get_all_can(int argc, char *argv[]) {
+    if (argc == 2) {
+        nrf_tx_data[NRF_PCK_HEADER_SIZE] = 
+                    (NRF_COMM_CMD_ALL_CAN<<4)|((uint8_t)atoi(argv[1]));
+        nrf_handle.nrf_data_from = NRF_UART;
+        nrf_handle.nrf_data_to = NRF_SPI;
+        nrf_all_can_send = (uint8_t)atoi(argv[1]);
+        _nrf_comm_send(nrf_handle.tx_data, 3);
     }
 }
 #endif // SL_NRF_COMM
@@ -280,6 +296,7 @@ void cmd_func_init(void) {
     cmd_add("nrf_rx_pipe_en", "enable nrf rx pipes", cmd_nrf_enable_rx_pipe);
     cmd_add("nrf_rx_pipe_dis", "disblae nrf rx pipes", cmd_nrf_disable_rx_pipe);
     cmd_add("nrf_state", "get nrf state", cmd_nrf_get_state);
+    cmd_add("nrf_set_rcan", "set remote can send", cmd_nrf_get_all_can);
     #endif // SL_NRF_COMM
 
     #ifdef SL_MOTOR_DRIVER
