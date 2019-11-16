@@ -28,6 +28,7 @@ void simplelib_init(UART_HandleTypeDef *cmd_usart, CAN_HandleTypeDef *hcan) {
     #endif // SL_USART_DMA
 
     #ifdef SL_CMD
+    cmd_init();
     cmd_func_init();
     uprintf("simplelib init done\r\n");
     #endif // SL_CMD
@@ -54,6 +55,7 @@ void simplelib_run(void) {
     }
     #endif // SL_CAN
     if (send_wave_flag) {
+        send_wave(0, 10, 20, 30);
         //HAL_Delay(10);
     }
 }

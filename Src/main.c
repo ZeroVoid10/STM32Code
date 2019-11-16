@@ -104,8 +104,12 @@ int main(void)
   // HAL_UART_Receive_DMA(&huart1, Rx_DMA_Buffer, 32);
   // __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
   simplelib_init(&huart1, &hcan);
+  #ifdef SL_FLASH
   load_prams();
+  #endif // SL_FLASH
+  #ifdef SL_NRF
   nrf_init(NULL);  // nrf init must after flash load prams!!
+  #endif // SL_NRF
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -113,7 +117,9 @@ int main(void)
   while (1)
   {
     simplelib_run();
+    #ifdef SL_NRF_COMM
     nrf_main();
+    #endif // SL_NRF_COMM
     /* if (nrf_send_flag == 1) {
       nrf_send_flag = 0;
       rx_data_process();

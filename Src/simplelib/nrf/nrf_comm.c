@@ -46,10 +46,12 @@ void nrf_main(void) {
         break;
     case NRF_TX_CALLBACK:
         _nrf_send_callback();
+        memset(nrf_tx_data, 0, 32);
         nrf_flow_state = NRF_IDLE;
         break;
     case NRF_MAX_RT_CALLBACK:
         _nrf_max_rt_callback();
+        memset(nrf_tx_data, 0, 32);
         nrf_flow_state = NRF_IDLE;
         break;
     

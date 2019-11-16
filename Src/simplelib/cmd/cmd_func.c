@@ -257,13 +257,17 @@ void cmd_md_set_position(int argc, char *argv[]) {
 #endif // EN_MOTOR_DRIVER
 #endif // SL_MOTOR_DRIVER
 
-
-#ifdef SL_DEBUG
 void cmd_hello_func(int argc, char *argv[]) {
     #ifdef SL_CMD
     uprintf("hello world\r\n");
     #endif // SL_CMD
 }
+void cmd_wave_test(int argc, char *argv[]) {
+    send_wave_flag ^= 1;
+    uprintf(send_wave_flag? "Wave Start\r\n":"Wave Stop\r\n");
+}
+
+#ifdef SL_DEBUG
 
 void cmd_can_test(int argc, char *argv[]) {
     uprintf("can send test\r\n");
@@ -280,11 +284,11 @@ void cmd_stop_rocker(int argc, char *argv[]) {
     uprintf("sotp show rocker\r\n");
 }
 
-void cmd_wave_test(int argc, char *argv[]) {
-    send_wave_flag ^= 1;
-    uprintf(send_wave_flag? "Wave Start\r\n":"Wave Stop\r\n");
-}
 #endif // SL_DEBUG
+
+void cmd_long(int argc, char *argv[]) {
+    uprintf("0123456789012345678901234567890\r\n");
+}
 
 void cmd_func_init(void) {
 
@@ -297,6 +301,10 @@ void cmd_func_init(void) {
     cmd_add("nrf_rx_pipe_dis", "disblae nrf rx pipes", cmd_nrf_disable_rx_pipe);
     cmd_add("nrf_state", "get nrf state", cmd_nrf_get_state);
     cmd_add("nrf_set_rcan", "set remote can send", cmd_nrf_get_all_can);
+    #else
+    cmd_add("hello", "just", cmd_hello_func);
+    cmd_add("wave", "", cmd_wave_test);
+    cmd_add("test", "", cmd_long);
     #endif // SL_NRF_COMM
 
     #ifdef SL_MOTOR_DRIVER
@@ -314,7 +322,6 @@ void cmd_func_init(void) {
     #endif // SL_MOTOR_DRIVER
 
     #ifdef SL_DEBUG
-    cmd_add("hello", "just", cmd_hello_func);
     cmd_add("can_test", "test can", cmd_can_test);
     cmd_add("wave", "", cmd_wave_test);
     cmd_add("rocker", "rocker", cmd_show_rocker);

@@ -36,7 +36,7 @@
 #ifdef SL_NRF_COMM
 #define DMA_BUFFER_SIZE (32-NRF_PCK_HEADER_SIZE)
 #else
-#define DMA_BUffER_SIZE 99
+#define DMA_BUFFER_SIZE 99
 #endif // SL_NRF_COMM
 
 extern UART_HandleTypeDef CMD_USART;
@@ -52,6 +52,7 @@ struct cmd_info {
 void usart_DMA_init();
 void usart_exc_DMA();
 void HAL_UART_IDLECallback(UART_HandleTypeDef *huart);
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart);
 
 int cmd_parse(char *cmd_line,int *argc,char *argv[]);
 int cmd_exec(int argc,char *argv[]);

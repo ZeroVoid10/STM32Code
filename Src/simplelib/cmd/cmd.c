@@ -23,6 +23,7 @@
 /* 变量定义 -----------------------------------------------------*/
 static const char *delim = ", \r\n\0";
 static HashTable cmd_table;
+static uint8_t printf_cplt_flag = 1;
 
 /**
  * @brief	兼容V0.1保留变量
@@ -30,6 +31,7 @@ static HashTable cmd_table;
 UART_HandleTypeDef CMD_USART;
 char *cmd_argv[MAX_ARGC]; 
 uint8_t DMAaRxBuffer[DMA_BUFFER_SIZE];
+// uint8_t DMAaRxBuffer[99];
 char DMAUSART_RX_BUF[DMA_BUFFER_SIZE];
 int buffer_count = 0;
 char uart_buffer[DMA_BUFFER_SIZE];
@@ -48,9 +50,6 @@ static void _cmd_help(const void *key, void **value, void *c1);
 void usart_DMA_init(UART_HandleTypeDef *cmd_usart) {
     CMD_USART = *cmd_usart;
     HAL_UART_Receive_DMA(&CMD_USART, (uint8_t *)&DMAaRxBuffer, 32);
-    #ifdef SL_CMD
-    cmd_init();
-    #endif // SL_CMD
     __HAL_UART_ENABLE_IT(&CMD_USART,UART_IT_IDLE); // 开启空闲中断
 }
 
@@ -66,7 +65,11 @@ void cmd_init(void) {
     if (cmd_table == NULL) {
         cmd_table = HashTable_create(str_cmp, hashStr, NULL);
     }
+    #ifdef SL_NRF_COMM
     cmd_add("nrf_help", "nrf communication cmd usage", cmd_help_func);
+    #else
+    cmd_add("help", "Help", cmd_help_func);
+    #endif // SL_NRF_COMM
 }
 
 void usart_exc_DMA() {
@@ -94,10 +97,13 @@ void HAL_UART_IDLECallback(UART_HandleTypeDef *huart) {
         uint8_t *clr = DMAaRxBuffer-1;
         // 一些芯片板子(F103 F072) 似乎并不需要这一行, 但STM32F407需要
         while(*(++clr) == '\0' && clr < DMAaRxBuffer+DMA_BUFFER_SIZE);
-        strncpy((char *)DMAUSART_RX_BUF,(char *)clr, DMA_BUFFER_SIZE - 1);
+        strncpy((char *)DMAUSART_RX_BUF,(char *)clr, DMA_BUFFER_SIZE);
         #ifdef SL_NRF_COMM
         nrf_handle.tx_len = strlen(DMAUSART_RX_BUF);
+        nrf_handle.tx_len++; // '\0'
+        // nrf_handle.tx_len = 32 - NRF_PCK_HEADER_SIZE;
         strncpy((char*)(nrf_tx_data + NRF_PCK_HEADER_SIZE), DMAUSART_RX_BUF, nrf_handle.tx_len);
+        nrf_handle.tx_len += NRF_PCK_HEADER_SIZE;
         nrf_handle.nrf_data_from = NRF_UART;
         nrf_handle.nrf_data_to = NRF_UART;
         #ifndef SL_CMD
@@ -139,16 +145,20 @@ int cmd_parse(char *cmd_line,int *argc,char *argv[]){
  *          1   未找到指令
  */
 int cmd_exec(int argc,char *argv[]){
+    if (argc == 0) {
+        return 2;
+    }
     struct cmd_info *cmd = (struct cmd_info*)HashTable_get(cmd_table, argv[0]);
     if (cmd != NULL) {
         // TODO: ZeroVoid	change cmd_func to have a int return.
         cmd->cmd_func(argc, argv);
-        uprintf("[Done]\r\n");
+        // uprintf("[Done]\r\n");
         return 0;
     }
-    //uprintf("cmd not find\r\n");
     #ifdef SL_NRF_COMM
     nrf_flow_state = NRF_COMM_SEND;
+    #else 
+    uprintf("cmd not find\r\n");
     #endif // SL_NRF_COMM
     return 1;
 }
@@ -159,7 +169,11 @@ int cmd_exec(int argc,char *argv[]){
  * @return	None
  */
 void cmd_help_func(int argc,char *argv[]){
+    #ifdef SL_NRF_COMM
     uprintf("[NRF] Help:\r\n");
+    #else
+    uprintf("Help:\r\n");
+    #endif // SL_NRF_COMM
     HashTable_map(cmd_table, _cmd_help, NULL);
 }
 
@@ -196,29 +210,36 @@ void cmd_err_arg_default_handle(char *prompt) {
 
 char print_buffer[PRINT_BUFFER_SIZE];
 void uprintf(char *fmt, ...) {
+    // while(printf_cplt_flag == 0);
+    printf_cplt_flag = 0;
     int size;
     va_list arg_ptr;
     va_start(arg_ptr, fmt);
     size = vsnprintf(print_buffer, PRINT_BUFFER_SIZE, fmt, arg_ptr);
     va_end(arg_ptr);
 
-    CMD_USART.gState = HAL_UART_STATE_READY;
+    // CMD_USART.gState = HAL_UART_STATE_READY;
     HAL_UART_Transmit_DMA(&CMD_USART, (uint8_t*)print_buffer, size);
+    HAL_Delay(1);
     // if (HAL_UART_Transmit_DMA(&CMD_USART, (uint8_t *)print_buffer, size) != HAL_OK) {
     //     HAL_Delay(10);
     // }
     // FIXME: ZeroVoid	2019/10/17	快速输出或某些情况下会出现卡死情况
-    while(CMD_USART.hdmatx->State != HAL_DMA_STATE_READY);
-    //HAL_UART_Transmit(&CMD_USART, (uint8_t*)uart_buffer, size, 1000);
+    // while(CMD_USART.hdmatx->State != HAL_DMA_STATE_READY);
+    // HAL_UART_Transmit(&CMD_USART, (uint8_t*)print_buffer, size, 1000);
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
         // 输出完成后，重新设置USART准备状态，并解锁串口,否则无法再次输出
-        //huart->gState = HAL_UART_STATE_READY;
-        //while(CMD_USART.hdmatx->State != HAL_DMA_STATE_READY);
-        // if (huart->hdmatx != NULL) {
-        //     huart->hdmatx->State = HAL_DMA_STATE_READY;
-        // }
+        if (huart == &huart1) {
+            printf_cplt_flag = 1;
+            // huart->gState = HAL_UART_STATE_READY;
+            CMD_USART.gState = HAL_UART_STATE_READY;
+            // while(CMD_USART.hdmatx->State != HAL_DMA_STATE_READY);
+            if (CMD_USART.hdmatx != NULL) {
+                CMD_USART.hdmatx->State = HAL_DMA_STATE_READY;
+            }
+        }
 }
 
 void uprintf_to(UART_HandleTypeDef *huart, char *fmt, ...) {
@@ -228,8 +249,9 @@ void uprintf_to(UART_HandleTypeDef *huart, char *fmt, ...) {
     size = vsnprintf(print_buffer, PRINT_BUFFER_SIZE, fmt, arg_ptr);
     va_end(arg_ptr);
 
-    huart->gState = HAL_UART_STATE_READY;
+    // huart->gState = HAL_UART_STATE_READY;
     HAL_UART_Transmit_DMA(huart, (uint8_t *)print_buffer, size);
+    HAL_Delay(1);
     //while(huart->hdmatx->State != HAL_DMA_STATE_READY);
     // HAL_UART_Transmit(huart,(uint8_t *)uart_buffer,size,1000);
 }
@@ -246,7 +268,8 @@ void send_wave(float arg1, float arg2, float arg3, float arg4) {
     memcpy(s + 16, &arg4, sizeof(arg1));
     CMD_USART.gState = HAL_UART_STATE_READY;
     HAL_UART_Transmit_DMA(&CMD_USART, (uint8_t *)s, 22);
-    while(CMD_USART.hdmatx->State != HAL_DMA_STATE_READY);
+    HAL_Delay(1);
+    // while(CMD_USART.hdmatx->State != HAL_DMA_STATE_READY);
 }
 
 /* private function defined -----------------------------------------------------*/
