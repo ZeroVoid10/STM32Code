@@ -21,8 +21,8 @@ uint8_t nrf_tx_remainder = 0;
 static uint8_t cnt = 0;
 
 void _nrf_receive_callback(uint8_t *data, int len);
-void _nrf_send_callback(void);
-void _nrf_max_rt_callback(void);
+/* static void _nrf_send_callback(void);
+void _nrf_max_rt_callback(void); */
 void nrf_comm_cmd(NRF_Handle *handle);
 
 /**
@@ -64,16 +64,20 @@ void nrf_main(void) {
         break;
 
     case NRF_RX_CALLBACK:
-        _nrf_receive_callback(nrf_handle.rx_data, nrf_handle.rx_len);
         nrf_flow_state = NRF_IDLE;
+		if (nrf_read_rx_data(nrf_rx_data, &nrf_handle.rx_len, NULL) >= 0) {
+            _nrf_receive_callback(nrf_handle.rx_data, nrf_handle.rx_len);
+        };
         break;
     case NRF_TX_CALLBACK:
-        _nrf_send_callback();
+        // _nrf_send_callback();
+        nrf_send_callback(nrf_handle.tx_data, nrf_handle.tx_len);
         memset(nrf_tx_data, 0, 32);
         nrf_flow_state = NRF_IDLE;
         break;
     case NRF_MAX_RT_CALLBACK:
-        _nrf_max_rt_callback();
+        // _nrf_max_rt_callback();
+        nrf_max_rt_callback(nrf_handle.tx_data, nrf_handle.tx_len);
         memset(nrf_tx_data, 0, 32);
         nrf_flow_state = NRF_IDLE;
         break;
@@ -96,7 +100,9 @@ void _nrf_receive_callback(uint8_t *data, int len) {
     uint8_t deal_method = (data[0] & 0x0F);
     if (deal_method & NRF_UART) {
         #ifdef SL_CMD
+        // uprintf("rx cnt %d\r\n", rx_callback_cnt);
         uprintf_to(&huart1, (char*)(nrf_rx_data + NRF_PCK_HEADER_SIZE));
+        rx_callback_cnt = 0;
         // uprintf((char*)(nrf_rx_data_buffer + NRF_PCK_HEADER_SIZE));
         // pCMD_USART->gState = HAL_UART_STATE_READY;
         // HAL_UART_Transmit_DMA(pCMD_USART, nrf_rx_data + NRF_PCK_HEADER_SIZE, len);
@@ -131,20 +137,18 @@ void nrf_comm_cmd(NRF_Handle *handle) {
     }
 }
 
-void _nrf_send_callback(void) {
+/* void _nrf_send_callback(void) {
     #ifdef SL_NRF_DEBUG
     // HAL_GPIO_TogglePin(IND_LED_GPIO_Port, IND_LED_Pin);
     // HAL_GPIO_WritePin(IND_LED_GPIO_Port, IND_LED_Pin, GPIO_PIN_SET);
     #endif // SL_NRF_DEBUG
-    nrf_send_callback(nrf_handle.tx_data, nrf_handle.tx_len);
-}
+} */
 
-void _nrf_max_rt_callback(void) {
+/* void _nrf_max_rt_callback(void) {
     #ifdef SL_NRF_DEBUG_
     HAL_GPIO_TogglePin(IND_LED_GPIO_Port, IND_LED_Pin);
     #endif // SL_NRF_DEBUG
-    nrf_max_rt_callback(nrf_handle.tx_data, nrf_handle.tx_len);
-}
+} */
 
 __weak void nrf_spi_receive_callback(uint8_t *data, int len) {}
 __weak void nrf_can_receive_callback(uint8_t *data, int len) {}

@@ -55,7 +55,9 @@ void simplelib_run(void) {
     }
     #endif // SL_CAN
     if (send_wave_flag) {
+        #ifdef SL_DEBUG
         send_wave(0, 10, 20, 30);
-        //HAL_Delay(10);
+        HAL_Delay(10);
+        #endif // SL_DEBUG
     }
 }

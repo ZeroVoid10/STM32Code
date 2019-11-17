@@ -265,14 +265,15 @@ void send_wave(float arg1, float arg2, float arg3, float arg4) {
     //s[3] = 6;   // type
     s[20] = '\r';
     s[21] = '\n';
+    // s[22] = '\0';
     memcpy(s + 4, &arg1, sizeof(arg1));
     memcpy(s + 8, &arg2, sizeof(arg1));
     memcpy(s + 12, &arg3, sizeof(arg1));
     memcpy(s + 16, &arg4, sizeof(arg1));
+    // printf(s);
     pCMD_USART->gState = HAL_UART_STATE_READY;
     HAL_UART_Transmit_DMA(pCMD_USART, (uint8_t *)s, 22);
-    HAL_Delay(1);
-    // while(CMD_USART.hdmatx->State != HAL_DMA_STATE_READY);
+    while(pCMD_USART->hdmatx->State != HAL_DMA_STATE_READY);
 }
 
 /* private function defined -----------------------------------------------------*/

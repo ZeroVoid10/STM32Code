@@ -202,6 +202,7 @@ extern uint8_t nrf_rx_addr[6][5];
 extern NRF_FLOW_STATE nrf_flow_state;
 extern uint8_t nrf_all_can_send;
 extern NRF_Handle nrf_handle;
+extern uint8_t rx_callback_cnt;
 // extern NRF_AW nrf_addr_width;
 extern bool nrf_rx_addr_set[6];
 extern volatile uint8_t tx_locked;

@@ -69,6 +69,7 @@ NRF_FLOW_STATE nrf_flow_state = NRF_IDLE;
 bool nrf_rx_addr_set[6] = {0};
 volatile uint8_t tx_locked = 0;
 uint8_t nrf_rx_data_buffer[99] = {0};
+uint8_t rx_callback_cnt = 0;
 #ifdef SL_DEBUG
 can_msg msg;
 #endif // SL_DEBUG
@@ -268,22 +269,41 @@ uint8_t nrf_read_rx_data(uint8_t *data, uint8_t *len, NRF_PIPE *pipe) {
 
 	// uprintf("rx %d\r\n", retval);
 	_nrf_clear_rx_irq();
-	if(retval >= 0) {
+	/* if(retval >= 0) {
     	// nrf_receive_callback(data, *len);
 		nrf_flow_state = NRF_RX_CALLBACK;
 	} else {
 		nrf_flow_state = NRF_IDLE;
-	}
+	} */
 	return retval;
+}
+
+void _nrf_send_callback(void) {
+	
+}
+
+void _nrf_max_rt_callback(void) {
+	_nrf_clear_maxrt_irq();
+	_nrf_flush_tx();
+	NRF_CE_DISABLE();
+	_nrf_set_mode(NRF_PRX);
+	nrf_spi_delay();
+	NRF_CE_ENABLE();
+
 }
 
 void nrf_irq_handle(void) {
 	uint8_t status = _nrf_get_status();
 	if (NRF_STATUS_GET_RX_DR(status)) {
+		nrf_flow_state = NRF_RX_CALLBACK;
+		rx_callback_cnt++;
 		// uprintf("rx\r\n");
-		nrf_read_rx_data(nrf_rx_data, &nrf_rx_len, NULL);
+		// nrf_read_rx_data(nrf_rx_data, &nrf_rx_len, NULL);
 		// memcpy(nrf_rx_data_buffer, nrf_rx_data, nrf_rx_len);
 	} else if (NRF_STATUS_GET_TX_DS(status)) {
+		nrf_flow_state = NRF_TX_CALLBACK;
+		nrf_tx_data_unlock();
+		
 		_nrf_clear_tx_irq();
 		if (!tx_pipe0_addr_eq && nrf_config.send_crc_ack) {
 			// _nrf_set_rx_addr(0, nrf_rx_addr[0], nrf_addr_width + 2);
@@ -294,17 +314,16 @@ void nrf_irq_handle(void) {
 		_nrf_set_mode(NRF_PRX);
 		nrf_spi_delay();
 		NRF_CE_ENABLE();
-		nrf_tx_data_unlock();
-		nrf_flow_state = NRF_TX_CALLBACK;
 	} else if (NRF_STATUS_GET_MAX_RT(status)) {
+		nrf_flow_state = NRF_MAX_RT_CALLBACK;
+		nrf_tx_data_unlock();
+
 		_nrf_clear_maxrt_irq();
 		_nrf_flush_tx();
 		NRF_CE_DISABLE();
 		_nrf_set_mode(NRF_PRX);
 		nrf_spi_delay();
 		NRF_CE_ENABLE();
-		nrf_tx_data_unlock();
-		nrf_flow_state = NRF_MAX_RT_CALLBACK;
 	}
 }
 
@@ -786,12 +805,12 @@ __weak void _nrf_receive_callback(uint8_t *data, int len) {
 	#endif // SL_DEBUG
 }
 
-__weak void _nrf_send_callback(void) {
+/* __weak void _nrf_send_callback(void) {
 	#ifdef SL_DEBUG
 	uprintf_("send over\r\n");
 	#endif // SL_DEBUG
 }
 
-__weak void _nrf_max_rt_callback(void) {}
+__weak void _nrf_max_rt_callback(void) {} */
 
 #endif // SL_NRF
