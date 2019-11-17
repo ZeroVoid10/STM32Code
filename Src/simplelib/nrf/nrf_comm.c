@@ -15,6 +15,11 @@
 
 #include <string.h>
 
+uint8_t nrf_tx_buffer[99] = {0};
+uint8_t nrf_tx_cnt = 0;
+uint8_t nrf_tx_remainder = 0;
+static uint8_t cnt = 0;
+
 void _nrf_receive_callback(uint8_t *data, int len);
 void _nrf_send_callback(void);
 void _nrf_max_rt_callback(void);
@@ -26,17 +31,35 @@ void nrf_comm_cmd(NRF_Handle *handle);
  * @param   len         数据长度
  * @param   data_deal   NRF_UART / NRF_CAN / NRF_SPI 组合
  *          e.g. NRF_UART | NRF_CAN
+ * @note    使用前设置to 和 from
  */
-void nrf_comm_send(uint8_t *data, int len, uint8_t data_deal) {
-    nrf_handle.nrf_data_from = NRF_SPI;
-    nrf_handle.nrf_data_to = data_deal;
-    _nrf_comm_send(data, len);
+void nrf_comm_send(uint8_t *data, int len) {
+    // nrf_handle.nrf_data_from = NRF_SPI;
+    // nrf_handle.nrf_data_to = data_deal;
+    nrf_tx_cnt = len/(32 - NRF_PCK_HEADER_SIZE) + 1;
+    nrf_tx_data[1] = nrf_tx_cnt;
+    nrf_tx_remainder = len%(32 - NRF_PCK_HEADER_SIZE);
+    for (cnt = 0; cnt < nrf_tx_cnt - 1; cnt++) {
+        nrf_tx_data_lock();
+        memcpy(nrf_tx_data + NRF_PCK_HEADER_SIZE, nrf_tx_buffer + NRF_PCK_SIZE*cnt, NRF_PCK_SIZE);
+        _nrf_comm_send(nrf_tx_data, 32);
+        while(tx_locked);
+    }
+    nrf_tx_data_lock();
+    memcpy(nrf_tx_data + NRF_PCK_HEADER_SIZE, nrf_tx_buffer + NRF_PCK_SIZE*cnt, nrf_tx_remainder);
+    _nrf_comm_send(nrf_tx_data, NRF_PCK_HEADER_SIZE + nrf_tx_remainder);
+    while(tx_locked);
 }
 
 void nrf_main(void) {
     switch(nrf_flow_state) {
+    case NRF_IRQ:
+        // nrf_irq_handle();
+        break;
+
     case NRF_COMM_SEND:
-        _nrf_comm_send(nrf_handle.tx_data, nrf_handle.tx_len);
+        // _nrf_comm_send(nrf_handle.tx_data, nrf_handle.tx_len);
+        nrf_comm_send(nrf_tx_buffer, nrf_handle.tx_len);
         nrf_flow_state = NRF_IDLE;
         break;
 
@@ -69,22 +92,29 @@ void _nrf_comm_send(uint8_t *data, int len) {
 }
 
 void _nrf_receive_callback(uint8_t *data, int len) {
-    uint8_t tmp = (data[0] & 0x0F);
-    if (tmp & NRF_UART) {
+    // uint8_t cnt = (data[0])
+    uint8_t deal_method = (data[0] & 0x0F);
+    if (deal_method & NRF_UART) {
         #ifdef SL_CMD
         uprintf_to(&huart1, (char*)(nrf_rx_data + NRF_PCK_HEADER_SIZE));
+        // uprintf((char*)(nrf_rx_data_buffer + NRF_PCK_HEADER_SIZE));
+        // pCMD_USART->gState = HAL_UART_STATE_READY;
+        // HAL_UART_Transmit_DMA(pCMD_USART, nrf_rx_data + NRF_PCK_HEADER_SIZE, len);
+        // while(pCMD_USART->hdmatx->State != HAL_DMA_STATE_READY);
         #endif // SL_CMD
         nrf_uart_receive_callback(data + NRF_PCK_HEADER_SIZE, len - NRF_PCK_HEADER_SIZE);
+        HAL_GPIO_TogglePin(IND_LED_GPIO_Port, IND_LED_Pin);
     }
-    if (tmp & NRF_CAN) {
+    if (deal_method & NRF_CAN) {
         nrf_can_receive_callback(data + NRF_PCK_HEADER_SIZE, len - NRF_PCK_HEADER_SIZE);
     }
-    if (tmp & NRF_SPI) {
+    if (deal_method & NRF_SPI) {
         nrf_comm_cmd(&nrf_handle);
         nrf_spi_receive_callback(data + NRF_PCK_HEADER_SIZE, len - NRF_PCK_HEADER_SIZE);
     }
     #ifdef SL_NRF_DEBUG
-    HAL_GPIO_TogglePin(IND_LED_GPIO_Port, IND_LED_Pin);
+    // HAL_GPIO_TogglePin(IND_LED_GPIO_Port, IND_LED_Pin);
+    // HAL_GPIO_WritePin(IND_LED_GPIO_Port, IND_LED_Pin, GPIO_PIN_RESET);
     #endif // SL_NRF_DEBUG
     nrf_receive_callback(nrf_handle.rx_data, nrf_handle.rx_len);
 }
@@ -103,7 +133,8 @@ void nrf_comm_cmd(NRF_Handle *handle) {
 
 void _nrf_send_callback(void) {
     #ifdef SL_NRF_DEBUG
-    HAL_GPIO_TogglePin(IND_LED_GPIO_Port, IND_LED_Pin);
+    // HAL_GPIO_TogglePin(IND_LED_GPIO_Port, IND_LED_Pin);
+    // HAL_GPIO_WritePin(IND_LED_GPIO_Port, IND_LED_Pin, GPIO_PIN_SET);
     #endif // SL_NRF_DEBUG
     nrf_send_callback(nrf_handle.tx_data, nrf_handle.tx_len);
 }

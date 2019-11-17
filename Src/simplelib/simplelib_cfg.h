@@ -20,9 +20,9 @@ extern "C" {
  *******************************************************************************/
 // #define SL_OS                           // OS系统模块
 #define SL_CAN                          // CAN通信模块
+#define SL_USART					    // USART 模块
 #define SL_CMD                          // 串口通信模块
 // #define SL_CMD_DMA                          // 串口通信DMA使用
-#define SL_USART_DMA                    // 串口DMA
 #define SL_FLASH                        // Flash 模块
 #define SL_NRF                          // NRF通信模块
 #define SL_NRF_COMM                     // NRF 通信通信协议
@@ -31,9 +31,22 @@ extern "C" {
 // #define SL_IMI_SPI                      // 软件SPI封装
 // #define SL_AS5047P                      // AS5047P 
 
+
 // #define SL_DEBUG                        // Simplelib debug macro
 #define SL_NRF_DEBUG					 // 
 #define SL_COMP_V01					    // 兼容V0.1版本
+
+/* CMD Configuration -----------------------------------------------------*/
+#ifdef SL_CMD
+#ifndef SL_USART
+#define SL_USART
+#endif // n SL_USART
+#endif // SL_CMD
+
+/* USART Configuration -----------------------------------------------------*/
+#ifdef SL_USART
+#define SL_USART_DMA                    // 串口DMA
+#endif // SL_USART
 
 /* Motor Driver Configuration -----------------------------------------------------*/
 #ifdef SL_MOTOR_DRIVER
@@ -53,6 +66,7 @@ extern "C" {
 
 /* NRF Configuration -----------------------------------------------------*/
 #ifdef SL_NRF
+// FIXME: ZeroVoid	2019/11/17	 spi DMA NRF not work
 // #define SL_NRF_DMA                      // 使用DMA通信
 #include "gpio.h"
 #include "spi.h"

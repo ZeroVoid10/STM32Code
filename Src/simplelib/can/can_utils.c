@@ -15,9 +15,14 @@
 
 #include "hash.h"
 #include "flags.h"
-#include "cmd.h"
 #include "can_func.h"
 #include <stdlib.h>
+#ifdef SL_CMD
+#include "cmd.h"
+#endif // SL_CMD
+#ifdef SL_NRF_COMM
+#include "nrf_comm.h"
+#endif // SL_NRF_COMM
 
 CAN_HandleTypeDef HCAN;
 

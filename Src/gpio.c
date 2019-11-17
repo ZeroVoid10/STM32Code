@@ -74,6 +74,7 @@ void MX_GPIO_Init(void)
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   if (GPIO_Pin == NRF_IRQ_Pin) {
     #ifdef SL_NRF
+    // nrf_flow_state = NRF_IRQ;
     nrf_irq_handle();
     #endif // SL_NRF
   }

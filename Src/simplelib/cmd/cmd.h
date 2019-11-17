@@ -34,12 +34,13 @@
 #define PRINT_BUFFER_SIZE 101
 
 #ifdef SL_NRF_COMM
-#define DMA_BUFFER_SIZE (32-NRF_PCK_HEADER_SIZE)
+// #define DMA_BUFFER_SIZE (32-NRF_PCK_HEADER_SIZE)
+#define DMA_BUFFER_SIZE 99
 #else
 #define DMA_BUFFER_SIZE 99
 #endif // SL_NRF_COMM
 
-extern UART_HandleTypeDef CMD_USART;
+extern UART_HandleTypeDef *pCMD_USART;
 extern int DMA_RxOK_Flag;
 extern char cmd_line[MAX_CMD_LINE_LENGTH + 1];
 extern char *cmd_argv[MAX_ARGC];

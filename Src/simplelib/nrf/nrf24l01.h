@@ -147,6 +147,7 @@ typedef enum {
  */
 typedef enum nrf_flow_control {
 	NRF_IDLE,
+	NRF_IRQ,
     NRF_TX_CALLBACK,
     NRF_RX_CALLBACK,
     NRF_MAX_RT_CALLBACK,
@@ -188,13 +189,14 @@ typedef struct {
 	uint8_t nrf_data_from;
 	uint8_t nrf_data_to;
 	uint8_t nrf_addr_len;
+	uint8_t nrf_pck_cnt;
 } NRF_Handle;
 
 /*******************************************************************************
  * NRF Val
  *******************************************************************************/
-extern uint8_t nrf_rx_data[32];
-extern uint8_t nrf_tx_data[32];
+extern uint8_t nrf_rx_data[33];
+extern uint8_t nrf_tx_data[33];
 extern uint8_t nrf_tx_addr[5];
 extern uint8_t nrf_rx_addr[6][5];
 extern NRF_FLOW_STATE nrf_flow_state;
@@ -202,7 +204,8 @@ extern uint8_t nrf_all_can_send;
 extern NRF_Handle nrf_handle;
 // extern NRF_AW nrf_addr_width;
 extern bool nrf_rx_addr_set[6];
-
+extern volatile uint8_t tx_locked;
+extern uint8_t nrf_rx_data_buffer[99];
 
 /*******************************************************************************
  * NRF Register Map
@@ -329,6 +332,8 @@ void nrf_set_addr_width(uint8_t width);
 void nrf_get_tx_addr(uint8_t** addr, uint8_t *len);
 void nrf_get_rx_addr(NRF_PIPE pipe, uint8_t** addr, uint8_t *len);
 void nrf_irq_handle(void);
+void nrf_tx_data_lock(void);
+void nrf_tx_data_unlock(void);
 void _nrf_receive_callback(uint8_t *data, int len);
 void _nrf_send_callback(void);
 void _nrf_max_rt_callback(void);

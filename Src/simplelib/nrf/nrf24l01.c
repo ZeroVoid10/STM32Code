@@ -58,8 +58,8 @@ static void nrf_spi_delay(void);
  * NRF Val
  *******************************************************************************/
 NRF_Handle nrf_handle;
-uint8_t nrf_rx_data[32];
-uint8_t nrf_tx_data[32];
+uint8_t nrf_rx_data[33] = {0};
+uint8_t nrf_tx_data[33] = {0};
 uint8_t nrf_rx_len;
 uint8_t nrf_all_can_send = 0;
 uint8_t nrf_tx_addr[5];
@@ -67,6 +67,8 @@ uint8_t nrf_rx_addr[6][5];
 // NRF_AW nrf_addr_width;
 NRF_FLOW_STATE nrf_flow_state = NRF_IDLE;
 bool nrf_rx_addr_set[6] = {0};
+volatile uint8_t tx_locked = 0;
+uint8_t nrf_rx_data_buffer[99] = {0};
 #ifdef SL_DEBUG
 can_msg msg;
 #endif // SL_DEBUG
@@ -264,10 +266,13 @@ uint8_t nrf_read_rx_data(uint8_t *data, uint8_t *len, NRF_PIPE *pipe) {
 		}
     }
 
+	// uprintf("rx %d\r\n", retval);
 	_nrf_clear_rx_irq();
 	if(retval >= 0) {
     	// nrf_receive_callback(data, *len);
 		nrf_flow_state = NRF_RX_CALLBACK;
+	} else {
+		nrf_flow_state = NRF_IDLE;
 	}
 	return retval;
 }
@@ -275,7 +280,9 @@ uint8_t nrf_read_rx_data(uint8_t *data, uint8_t *len, NRF_PIPE *pipe) {
 void nrf_irq_handle(void) {
 	uint8_t status = _nrf_get_status();
 	if (NRF_STATUS_GET_RX_DR(status)) {
+		// uprintf("rx\r\n");
 		nrf_read_rx_data(nrf_rx_data, &nrf_rx_len, NULL);
+		// memcpy(nrf_rx_data_buffer, nrf_rx_data, nrf_rx_len);
 	} else if (NRF_STATUS_GET_TX_DS(status)) {
 		_nrf_clear_tx_irq();
 		if (!tx_pipe0_addr_eq && nrf_config.send_crc_ack) {
@@ -287,6 +294,7 @@ void nrf_irq_handle(void) {
 		_nrf_set_mode(NRF_PRX);
 		nrf_spi_delay();
 		NRF_CE_ENABLE();
+		nrf_tx_data_unlock();
 		nrf_flow_state = NRF_TX_CALLBACK;
 	} else if (NRF_STATUS_GET_MAX_RT(status)) {
 		_nrf_clear_maxrt_irq();
@@ -295,6 +303,7 @@ void nrf_irq_handle(void) {
 		_nrf_set_mode(NRF_PRX);
 		nrf_spi_delay();
 		NRF_CE_ENABLE();
+		nrf_tx_data_unlock();
 		nrf_flow_state = NRF_MAX_RT_CALLBACK;
 	}
 }
@@ -759,6 +768,14 @@ static void nrf_spi_delay(void) {
     for (volatile int i = 0; i<20; i++) {
         UNUSED(i);
     }
+}
+
+void nrf_tx_data_lock(void) {
+	tx_locked = 1;
+}
+
+void nrf_tx_data_unlock(void) {
+	tx_locked = 0;
 }
 
 __weak void _nrf_receive_callback(uint8_t *data, int len) {

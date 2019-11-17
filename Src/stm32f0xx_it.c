@@ -197,8 +197,8 @@ void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
   #ifdef SL_CMD
-  if(__HAL_UART_GET_FLAG(&CMD_USART, UART_FLAG_IDLE) != RESET){
-    HAL_UART_IDLECallback(&CMD_USART);
+  if(__HAL_UART_GET_FLAG(pCMD_USART, UART_FLAG_IDLE) != RESET){
+    HAL_UART_IDLECallback(pCMD_USART);
     return ;
   }
   #endif // SL_CMD

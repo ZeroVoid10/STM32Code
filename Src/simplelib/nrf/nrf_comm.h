@@ -39,8 +39,13 @@ extern "C" {
  * NRF Protocol
  *******************************************************************************/
 #define NRF_PCK_HEADER_SIZE					        2   // 数据包报头长度/Byte
+#define NRF_PCK_SIZE                                (32-NRF_PCK_HEADER_SIZE)
 #define NRF_CAN_SID                                 230 // ASCII NRF 加和
 #define NRF_COMM_CMD_ALL_CAN                        10
+
+#define NRF_COMM_DATA_TO_POS					    0 // 
+#define NRF_COMM_DATA_FROM_POS                      4
+#define NRF_COMM_PCK_NUM_POS                        8
 typedef enum nrf_comm_way {
     NRF_UART = 0x1,
     NRF_CAN = 0x2,
@@ -50,9 +55,10 @@ typedef enum nrf_comm_way {
 /*******************************************************************************
  * NRF Protocol Val
  *******************************************************************************/
+extern uint8_t nrf_tx_buffer[99];
 
 void nrf_main(void);
-void nrf_comm_send(uint8_t *data, int len, uint8_t data_deal);
+void nrf_comm_send(uint8_t *data, int len);
 void _can_rx_nrf_callback(uint32_t *id, can_msg *data);
 void _nrf_comm_send(uint8_t *data, int len);
 
